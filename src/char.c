@@ -63,10 +63,18 @@ int InitChar( const char *prefix )
 	char filename[ 100 ];
 	int i;
 
+#ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, CHAR_FILE );
+#else
+	sprintf( filename, "%s\\%s", prefix, CHAR_FILE );
+#endif
 	dictfile = fopen( filename, "r" );
 
+#ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, CHAR_INDEX_FILE );
+#else
+	sprintf( filename, "%s\\%s", prefix, CHAR_INDEX_FILE );
+#endif
 	indexfile = fopen( filename, "r" );
 
 	if ( ! dictfile || ! indexfile )

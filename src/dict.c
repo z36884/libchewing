@@ -51,10 +51,18 @@ int InitDict( const char *prefix )
 	int i;
 	char filename[ 100 ];
 
+#ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, DICT_FILE );
+#else
+	sprintf( filename, "%s\\%s", prefix, DICT_FILE );
+#endif
 	dictfile = fopen( filename, "r" );
 
+#ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, PH_INDEX_FILE );
+#else
+	sprintf( filename, "%s\\%s", prefix, PH_INDEX_FILE );
+#endif
 	indexfile = fopen( filename, "r" );
 	assert( dictfile && indexfile );
 	i = 0;

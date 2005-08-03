@@ -82,7 +82,11 @@ void ReadTree( const char *prefix )
 	FILE *infile;
 	char filename[ 100 ];
 
+#ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, PHONE_TREE_FILE );
+#else
+	sprintf( filename, "%s\\%s", prefix, PHONE_TREE_FILE );
+#endif
 	infile = fopen( filename, "r" );
 	assert( infile );
 	for ( i = 0; i < TREE_SIZE; i++ ) {

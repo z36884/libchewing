@@ -19,6 +19,9 @@
 
 #include <string.h>
 #include <ctype.h>
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 #include "chewingio.h"
 #include "global.h"
