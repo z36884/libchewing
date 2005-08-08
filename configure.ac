@@ -40,13 +40,16 @@ AC_PREFIX_DEFAULT(/usr)
 
 # Init libtool
 AC_LIBTOOL_DLOPEN
+AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AC_LIB_LTDL
 AC_SUBST(LIBTOOL_DEPS)
 
 # libtool option to control which symbols are exported
 # right now, symbols starting with _ are not exported
-LIBTOOL_EXPORT_OPTIONS='-export-symbols-regex "^[[^_]].*"'
+#LIBTOOL_EXPORT_OPTIONS='-export-symbols-regex "^[[^_]].*"'
+LIBTOOL_EXPORT_OPTIONS='-no-undefined'
+AC_SUBST(LIBTOOL_EXPORT_OPTIONS)
 
 # Checks for programs.
 AC_PROG_CC
