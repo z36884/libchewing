@@ -1,0 +1,5 @@
+2005-08-11  Jim Huang  <jserv@kaffe.org>
+
+	* Initial import of OVIMTobacco from OpenVanilla subversion
+	repository.
+	Modifications: Adjust make rules and directory layout.
