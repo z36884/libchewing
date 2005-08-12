@@ -3,7 +3,6 @@
 #define OV_DEBUG
 
 #include "OpenVanilla.h"
-#include "OVLibrary.h"
 #include "OVUtility.h"
 
 #include <stdlib.h>

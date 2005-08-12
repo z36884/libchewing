@@ -1,3 +1,13 @@
+2005-08-12  Jim Huang  <jserv@kaffe.org>
+
+	* include/OVLibrary.h,
+	include/OVCIN.h,
+	include/OVStringToolKit.h,
+	include/OVFileHandler.h,
+	include/OVPhoneticLib.h: Removed since unused.
+
+	* OVIMTobacco.cpp: Likewise.
+
 2005-08-11  Jim Huang  <jserv@kaffe.org>
 
 	* Initial import of OVIMTobacco from OpenVanilla subversion
