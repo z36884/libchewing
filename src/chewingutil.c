@@ -95,7 +95,11 @@ int ChewingIsEntering( ChewingData *pgdata )
 
 int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	int selectAreaLen) {
     static char *chibuf[] = { "¡A","¡B","¡C","¡D","¡F","¡G",
+#ifdef _MSC_VER
+                              "¡H","¡I","¡J","?","¡K","¡L","¡U","¡X", "¡[","¡\",
+#else
                               "¡H","¡I","¡J","?","¡K","¡L","¡U","¡X", "¡[","¡\\",
+#endif
 		"¡]","¡^","¡_","¡`","¡m","¡n","¡o","¡p",
 		"¡q","¡r","¡s","¡t","¡i","¡j","¡k","¡l",
 		"¡a","¡b","¡c","¡d","¡e","¡f","¡g","¡h",
@@ -108,8 +112,8 @@ int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	i
 		"¢W","¢J","¢K","¢X","¡Ó","¡Ñ","¡Ò","¡Ü",
 		"¡Ú","¡Ø","¡Ù","¡ã","¡ç","¡æ","¡è","¡Ý",
 		"¡é","¡Û","¡Ô","?","¢z","¢s","¢{","¢u",
-		"¢q","¢t","¢|","¢r","¢}","¢w","¢x","¢¤",
-		"¢¥","¢¦","¢§","¢¬","¢­","¢®","¢~","¢¡",
+		"¢q","¢t","¢|","¢r","¢}","¢w","¢x","ùù",
+		"ùé","ùê","ùë","¢¬","¢­","¢®","¢~","¢¡",
 		"¢¢","¢£","¢b","¢c","¢d","¢e","¢f","¢g",
 		"¢h","¢i","¢j","¢k","¢l","¢m","¢n","¢o",
 		"¢p","¢v","¢Ã","¢Ä","¢Å","¢Æ","¢Ç","¢È",
@@ -118,7 +122,11 @@ int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	i
 		"£D","£E","£F","£G","£H","£I","£J","£K",
 		"£L","£M","£N","£O","£P","£Q","£R","£S",
 		"£T","£U","£V","£W","£X","£Y","£Z","£[",
+#ifdef _MSC_VER
+		"£\","£]","£^","£_","£`","£a","£b","£c",
+#else
 		"£\\","£]","£^","£_","£`","£a","£b","£c",
+#endif
                               "£d","£e","£f","£g","£h","£i","£j","£k",
                               "£l","£m","£n","£o","£p","£q","£r","£s"};
     int i, all = 216;
