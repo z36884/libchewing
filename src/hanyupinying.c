@@ -23,22 +23,8 @@
 PinYingZuinMap *hanyuInitialsMap, *hanyuFinalsMap;
 int HANYU_INITIALS, HANYU_FINALS, INIT_FLAG = 0;
 
-#if	_MSC_VER > 1000
-	static PinYingZuinMap InitialsMap_map[ 26 ] = {
-		{"b" , "1"}, {"p" , "q"}, {"m" , "a"}, {"f" ,"z"},
-		{"d" , "2"}, {"t" , "w"}, {"n" , "s"}, {"l" ,"x"},
-		{"g" , "e"}, {"k" , "d"}, {"h" , "c"},
-		{"j" , "r"}, {"q" , "f"}, {"x" , "v"},
-		{"zhi", "5"}, {"zh", "5"}, {"chi", "t"}, {"ch", "t"},
-		{"shi", "g"}, {"sh", "g"}, {"ri", "b"}, {"r" ,"b"},
-		{"z" , "y"}, {"c" , "h"}, {"s" , "n"}
-	};
-#endif
-
 static PinYingZuinMap* InitialsMap()
 {
-	HANYU_INITIALS = 26;
-#ifndef	_MSC_VER	/* This piece of code cannot be compiled under VC++	*/
 	static PinYingZuinMap map[ 26 ] = {
 		{"b" , "1"}, {"p" , "q"}, {"m" , "a"}, {"f" ,"z"},
 		{"d" , "2"}, {"t" , "w"}, {"n" , "s"}, {"l" ,"x"},
@@ -48,69 +34,12 @@ static PinYingZuinMap* InitialsMap()
 		{"shi", "g"}, {"sh", "g"}, {"ri", "b"}, {"r" ,"b"},
 		{"z" , "y"}, {"c" , "h"}, {"s" , "n"}
 	};
+	HANYU_INITIALS = 26;
 	return map;
-#else
-	return InitialsMap_map;
-#endif
 }
-
-#if	_MSC_VER > 1000
-	static PinYingZuinMap FinalsMap_map[ 72 ] = {
-		{"uang","j;"}, {"wang","j;"},
-		{"wong","j/"}, {"weng","j/"},
-		{"ying","u/"},
-		{"iong","m/"}, {"yong","m/"}, {"iung","m/"}, {"yung","m/"},
-		{"iang","u;"}, {"yang","u;"},
-		{"iuan","m0"}, {"yuan","m0"},
-		{"ing","u/"},
-		{"iao","ul"}, {"yao","ul"},
-		{"iun","mp"}, {"yun","mp"},
-		{"iou","u."}, {"you","u."},
-		{"ian","u0"}, {"yan","u0"},
-		{"yin","up"},
-		{"ang",";"},
-		{"eng","/"},
-		{"iue","m,"}, {"yue","m,"},
-		{"uai","j9"}, {"wai","j9"},
-		{"uei","jo"}, {"wei","jo"},
-		{"uan","j0"}, {"wan","j0"},
-		{"uen","jp"}, {"wen","jp"},
-		{"ong","j/"},
-		{"van","m0"},
-		{"ven","mp"},
-		{"er","-"},
-		{"ai","9"},
-		{"ei","o"},
-		{"ao","l"},
-		{"ou","."},
-		{"an","0"},
-		{"en","p"},
-		{"yi","u"},
-		{"ia","u8"}, {"ya","u8"},
-		{"ie","u,"}, {"ye","u,"},
-		{"in","up"},
-		{"io","u."},
-		{"wu","j"},
-		{"ua","j8"}, {"wa","j8"},
-		{"uo","ji"}, {"wo","ji"},
-		{"ui","jo"},
-		{"iu","m"}, {"yu","m"},
-		{"ue","m,"}, {"ve","m,"},
-		{"un","mp"}, {"vn","mp"},
-		{"a","8"},
-		{"e","k"},
-		{"i","u"},
-		{"o","i"},
-		{"v","m"},
-		{"u","j"},
-		{"E",","}
-	};
-#endif
 
 static PinYingZuinMap* FinalsMap()
 {
-	HANYU_FINALS = 72;
-#ifndef	_MSC_VER	/* This piece of code cannot be compiled under VC++	*/
 	static PinYingZuinMap map[ 72 ] = {
 		{"uang","j;"}, {"wang","j;"},
 		{"wong","j/"}, {"weng","j/"},
@@ -161,10 +90,8 @@ static PinYingZuinMap* FinalsMap()
 		{"u","j"},
 		{"E",","}
 	};
+	HANYU_FINALS = 72;
 	return map;
-#else
-	return FinalsMap_map;
-#endif
 }
 
 static void FreeMap()
