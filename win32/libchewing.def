@@ -1,5 +1,4 @@
 EXPORTS
-	GetChiEngMode
 	InitChar
 	InitChewing
 	InitDict
@@ -26,5 +25,6 @@ EXPORTS
 	OnKeyUp
 	ReadHash
 	ReadTree
-	SetChiEngMode
+	SetShapeMode
+	GetShapeMode
 	SetConfig
