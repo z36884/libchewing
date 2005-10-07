@@ -57,7 +57,10 @@
 				TypeLibraryName=".\Debug/libChewing.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="@echo on
+del C:\Windows\System32\libchewing.dll
+copy .\Debug\libchewing.dll C:\Windows\System32\*"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

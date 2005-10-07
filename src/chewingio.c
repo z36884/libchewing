@@ -294,20 +294,20 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 			case ZUIN_KEY_ERROR:
 			case ZUIN_IGNORE:
 				if ( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen ) {
-/*					if (
+					if (
 						ChewingIsChiAt(
 							pgdata->chiSymbolCursor - 1,
 							pgdata ) ) {
 						toSelect = 1;
 
 					}
-*/
-					toSelect = 0;
+/*					toSelect = 0;
 					if( pgdata->bFullShape )
 						rtn = FullShapeSymbolInput( ' ', pgdata );
 					else
 						rtn = SymbolInput( ' ', pgdata );
 					keystrokeRtn = KEYSTROKE_ABSORB;
+*/
 				} else {
 					if (
 						ChewingIsChiAt(
