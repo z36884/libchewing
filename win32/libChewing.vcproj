@@ -23,7 +23,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBCHEWING_EXPORTS"
+				PreprocessorDefinitions="USE_BINARY_DAT;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBCHEWING_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -60,7 +60,8 @@
 				Name="VCPostBuildEventTool"
 				CommandLine="@echo on
 del C:\Windows\System32\libchewing.dll
-copy .\Debug\libchewing.dll C:\Windows\System32\*"/>
+copy .\Debug\libchewing.dll C:\Windows\System32\*
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -93,7 +94,7 @@ copy .\Debug\libchewing.dll C:\Windows\System32\*"/>
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBCHEWING_EXPORTS"
+				PreprocessorDefinitions="USE_BINARY_DAT;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBCHEWING_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"

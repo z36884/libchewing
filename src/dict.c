@@ -58,16 +58,27 @@ int InitDict( const char *prefix )
 #endif
 	dictfile = fopen( filename, "r" );
 
-#ifndef WIN32
-	sprintf( filename, "%s/%s", prefix, PH_INDEX_FILE );
+	#ifndef WIN32
+		sprintf( filename, "%s/%s", prefix, PH_INDEX_FILE );
+	#else
+		sprintf( filename, "%s\\%s", prefix, PH_INDEX_FILE );
+	#endif
+
+#ifdef	USE_BINARY_DAT
+	indexfile = fopen( filename, "rb" );
 #else
-	sprintf( filename, "%s\\%s", prefix, PH_INDEX_FILE );
-#endif
 	indexfile = fopen( filename, "r" );
+#endif
 	assert( dictfile && indexfile );
 	i = 0;
 	while ( !feof( indexfile ) )
-		fscanf( indexfile, "%d", &begin[ i++ ] );
+	{
+		#ifdef	USE_BINARY_DAT
+			fread( &begin[ i++ ], sizeof(int), 1, indexfile );
+		#else
+			fscanf( indexfile, "%d", &begin[ i++ ] );
+		#endif
+	}
 	fclose( indexfile );
 	addTerminateService( TerminateDict );
 	return 1;

@@ -87,6 +87,10 @@ void ReadTree( const char *prefix )
 #else
 	sprintf( filename, "%s\\%s", prefix, PHONE_TREE_FILE );
 #endif
+#ifdef	USE_BINARY_DAT
+	infile = fopen( filename, "rb" );
+	fread( tree, sizeof(TreeType), TREE_SIZE, infile );
+#else
 	infile = fopen( filename, "r" );
 	assert( infile );
 	for ( i = 0; i < TREE_SIZE; i++ ) {
@@ -97,6 +101,7 @@ void ReadTree( const char *prefix )
 			&tree[ i ].child_end ) != 4 )
 			break;
 	}
+#endif
 	fclose( infile );
 }
 

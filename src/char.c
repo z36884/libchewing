@@ -75,13 +75,23 @@ int InitChar( const char *prefix )
 #else
 	sprintf( filename, "%s\\%s", prefix, CHAR_INDEX_FILE );
 #endif
+#ifdef	USE_BINARY_DAT
+	indexfile = fopen( filename, "rb" );
+#else
 	indexfile = fopen( filename, "r" );
-
+#endif
 	if ( ! dictfile || ! indexfile )
 		return 0;
 
 	for ( i = 0; i <= PHONE_NUM; i++ )
-		fscanf( indexfile, "%hu %d", &arrPhone[ i ], &begin[ i ] );
+	{
+		#ifdef	USE_BINARY_DAT
+			fread( &arrPhone[ i ], sizeof(uint16), 1, indexfile );
+			fread( &begin[ i ], sizeof(int), 1, indexfile );
+		#else
+			fscanf( indexfile, "%hu %d", &arrPhone[ i ], &begin[ i ] );
+		#endif
+	}
 	fclose( indexfile );
 	addTerminateService( TerminateChar );
 	return 1;
