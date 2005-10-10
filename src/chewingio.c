@@ -84,6 +84,10 @@ static void TerminateDebug()
 int addTerminateService( void (*callback)() )
 {       
 	if ( callback ) {
+		int i;
+		for( i = 0; i < countTerminateService; ++i )
+			if( TerminateServices[i] == callback )
+				return 1;
 		TerminateServices[ countTerminateService++ ] = callback;
 		return 0;
 	}
@@ -137,7 +141,9 @@ int InitChewing( void *iccf, ChewingConf *cf )
 	pgdata->PointStart = -1;
 	pgdata->PointEnd = 0;
 	/* XXX: make options for callee to decide if use atexit or not. */
+#ifndef	DISABLE_ATEXIT
 	atexit( TerminateChewing );
+#endif
 	return 0;
 }
 
@@ -301,13 +307,6 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 						toSelect = 1;
 
 					}
-/*					toSelect = 0;
-					if( pgdata->bFullShape )
-						rtn = FullShapeSymbolInput( ' ', pgdata );
-					else
-						rtn = SymbolInput( ' ', pgdata );
-					keystrokeRtn = KEYSTROKE_ABSORB;
-*/
 				} else {
 					if (
 						ChewingIsChiAt(
@@ -316,7 +315,6 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 						toSelect = 1;
 					}
 				}
-
 				if ( toSelect ) {
 					if ( ! pgdata->bSelect )
 						ChoiceFirstAvail( pgdata );
