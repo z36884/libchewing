@@ -43,7 +43,7 @@ typedef struct {
 	RecordNode *phList;  
 } TreeDataType;
 
-extern TreeType tree[ TREE_SIZE ];
+TreeType tree[ TREE_SIZE ];
 
 int IsContain( IntervalType in1, IntervalType in2 )
 {

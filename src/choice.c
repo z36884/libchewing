@@ -26,9 +26,6 @@
 
 #define CEIL_DIV( a, b ) 	( ( a + b - 1 ) / b )
 
-
-TreeType tree[ TREE_SIZE ];
-
 void ChangeSelectIntervalAndBreakpoint( ChewingData *pgdata, int from, int to, char *str )
 {
 	int i;
