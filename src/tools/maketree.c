@@ -196,7 +196,7 @@ void BFS2()
 {
 	NODE *pNode;
 	LISTNODE *pList;
-	int rc;
+	int rc,i;
 	sqlite3 *db;
 	sqlite3_stmt *st;
 	char *zErrMsg = 0;
@@ -209,34 +209,35 @@ void BFS2()
 	  exit(1);
 	}
 
-	rc = sqlite3_exec(db, "CREATE TABLE tree (phone_id,phrase_id,child_begin,child_end)", NULL, NULL, &zErrMsg);
+	rc = sqlite3_exec(db, "CREATE TABLE tree (id,phone_id,phrase_id,child_begin,child_end)", NULL, NULL, &zErrMsg);
 	if( rc!=SQLITE_OK ) {fprintf(stderr, "A SQL error: %s\n", zErrMsg); }
 
-	rc = sqlite3_prepare(db, "INSERT INTO tree VALUES (?,?,?,?)" , -1 , &st , (const char **)&buf);
+	rc = sqlite3_prepare(db, "INSERT INTO tree VALUES (?,?,?,?,?)" , -1 , &st , (const char **)&buf);
 	if( rc!=SQLITE_OK ) { fprintf(stderr, "B SQL error: %d\n", rc);}
 
 	rc = sqlite3_exec(db, "BEGIN", NULL, NULL, &zErrMsg);
 	if( rc!=SQLITE_OK ) {fprintf(stderr, "C SQL error: %s\n", zErrMsg);} 
 
+	i = 0;
 	QueuePut( root );
 	while ( ! QueueEmpty() ) {
 		pNode = QueueGet();
-
-		sqlite3_bind_int(st, 1, pNode->key);
-		sqlite3_bind_int(st, 2, pNode->phraseno);
+		sqlite3_bind_int(st, 1, i++);
+		sqlite3_bind_int(st, 2, (int) pNode->key);
+		sqlite3_bind_int(st, 3, pNode->phraseno);
 
 		/* compute the begin and end index */
 		pList = pNode->childList;
 		if( pList ) {
-			sqlite3_bind_int(st, 3, pList->pNode->nodeno);
+			sqlite3_bind_int(st, 4, pList->pNode->nodeno);
 			for ( ; pList->next; pList = pList->next ) {
 				QueuePut( pList->pNode );
 			}
 			QueuePut( pList->pNode );
-			sqlite3_bind_int(st, 4, pList->pNode->nodeno);
+			sqlite3_bind_int(st, 5, pList->pNode->nodeno);
 		} else {
-			sqlite3_bind_int(st, 3, -1);
 			sqlite3_bind_int(st, 4, -1);
+			sqlite3_bind_int(st, 5, -1);
 		}
 		sqlite3_step(st);
 		sqlite3_reset(st);

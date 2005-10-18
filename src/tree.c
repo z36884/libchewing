@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sqlite3.h>
 
 #include "global.h"
 #include "dict.h"
@@ -40,11 +41,10 @@ typedef struct {
 	int leftmost[ MAX_PHONE_SEQ_LEN + 1 ] ;
 	char graph[ MAX_PHONE_SEQ_LEN + 1 ][ MAX_PHONE_SEQ_LEN + 1 ];
 	PhraseIntervalType interval[ MAX_INTERVAL ];
-	int nInterval;
-	RecordNode *phList;  
+	int nInterval;	RecordNode *phList;  
 } TreeDataType;
 
-TreeType tree[ TREE_SIZE ];
+TreeType *tree;
 
 int IsContain( IntervalType in1, IntervalType in2 )
 {
@@ -79,21 +79,45 @@ int GetIntersection( IntervalType in1, IntervalType in2, IntervalType *in3 )
 void ReadTree( const char *prefix )
 {
 	int i;
-	FILE *infile;
 	char filename[ 100 ];
+	int rc;
+	sqlite3 *db;
+	sqlite3_stmt *st;
+	char *zErrMsg = 0;
+	char *buf;
+	int tree_size;
 
 	sprintf( filename, "%s/%s", prefix, PHONE_TREE_FILE );
-	infile = fopen( filename, "r" );
-	assert( infile );
-	for ( i = 0; i < TREE_SIZE; i++ ) {
-		if ( fscanf( infile, "%hu%d%d%d",
-			&tree[ i ].phone_id,
-			&tree[ i ].phrase_id,
-			&tree[ i ].child_begin,
-			&tree[ i ].child_end ) != 4 )
-			break;
+
+	rc = sqlite3_open(filename,&db);
+	if(rc) {
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
+		exit(1);
 	}
-	fclose( infile );
+
+	
+	rc = sqlite3_prepare(db, "SELECT max(id) FROM tree" , -1 , &st , (const char **)&buf);
+	rc = sqlite3_step(st);
+	if( rc!=SQLITE_ROW ) { fprintf(stderr, "SQL error: %d\n", rc);}
+	tree_size = sqlite3_column_int(st,0) + 1;
+
+	tree = (TreeType*)calloc(tree_size, sizeof(TreeType));
+
+	rc = sqlite3_prepare(db, "SELECT phone_id,phrase_id,child_begin,child_end FROM tree  ORDER by id" , -1 , &st , (const char **)&buf);
+	if( rc!=SQLITE_OK ) { fprintf(stderr, "SQL error (prepare SELECT) : %d\n", rc);}
+
+	i = 0;
+	while(SQLITE_ROW == sqlite3_step(st)) {
+		tree[i].phone_id    = (uint16)sqlite3_column_int(st,0);
+		tree[i].phrase_id   = sqlite3_column_int(st,1);
+		tree[i].child_begin = sqlite3_column_int(st,2);
+		tree[i].child_end   = sqlite3_column_int(st,3);
+		i++;
+		// Just in case (what kind of ?)
+		if(i >= tree_size) { break; }
+	}
+	sqlite3_close(db);
 }
 
 int CheckBreakpoint( int from, int to, int bArrBrkpt[] )
@@ -735,3 +759,7 @@ int Phrasing(
 	return 0;
 }
 
+
+// Local Variables:
+// c-indentation-style: linux
+// End:

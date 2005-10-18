@@ -12,7 +12,6 @@
 #define TREE_H
 
 #define PHONE_TREE_FILE		"fonetree.dat"
-#define TREE_SIZE (153251)
 
 typedef struct {
 	uint16 phone_id;

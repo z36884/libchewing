@@ -9,6 +9,7 @@ all: gendata
 gendata: phone.cin tsi.src
 	$(tooldir)/sort_word
 	$(tooldir)/sort_dic tsi.src
+	-rm -f fonetree.dat
 	$(tooldir)/maketree
 	-rm -f phoneid.dic
 install-data-local: $(datas) pinyin.tab

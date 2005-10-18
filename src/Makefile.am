@@ -17,6 +17,7 @@ libchewing_la_SOURCES = \
 	hanyupinying.c
 libchewing_la_LIBADD = common/libcommon.la
 libchewing_la_LDFLAGS = \
+	-lsqlite3 \
 	-version-info $(LIBCHEWING_CURRENT):$(LIBCHEWING_REVISION):$(LIBCHEWING_AGE) \
 	-export-dynamic \
 	@LIBTOOL_EXPORT_OPTIONS@
