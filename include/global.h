@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PHONE_TREE_FILE		"fonetree.dat"
 #define DICT_FILE		"dict.dat"
 #define PH_INDEX_FILE		"ph_index.dat"
 #define CHAR_FILE		"us_freq.dat"
@@ -64,12 +63,6 @@ typedef union {
 	unsigned char s[ WCH_SIZE ];
 	wchar_t wch;
 } wch_t;
-
-typedef struct {
-	uint16 phone_id;
-	int phrase_id;
-	int child_begin, child_end;
-} TreeType;
 
 typedef struct {
 	int from, to;
