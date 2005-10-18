@@ -1,3 +1,8 @@
+2005-10-19  Kang-min Liu <gugod@gugod.or>
+
+	* tree.h is introcuted
+	* hash and userphrase are disabled
+
 2005-10-18  Hong Jen Yee (PCMan)  <hzysoft@sina.com.tw>
 
 	* libchewing/trunk/src/chewingio.c (OnKeyNumlock):
