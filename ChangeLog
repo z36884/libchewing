@@ -2,6 +2,7 @@
 
 	* tree.h is introcuted
 	* hash and userphrase are disabled
+        * ReadTree() and maketree are turned to SQLite-based
 
 2005-10-18  Hong Jen Yee (PCMan)  <hzysoft@sina.com.tw>
 
