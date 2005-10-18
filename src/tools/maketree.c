@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include <sqlite3.h>
+
 #include "global.h"
 #include "tree.h"
 
@@ -194,36 +196,57 @@ void BFS2()
 {
 	NODE *pNode;
 	LISTNODE *pList;
-	FILE *output = fopen( PHONE_TREE_FILE, "w" );
+	int rc;
+	sqlite3 *db;
+	sqlite3_stmt *st;
+	char *zErrMsg = 0;
+	char *buf;
+	uint16 key;
 
-	if ( ! output ) {
-		fprintf( stderr, "Error opening file " PHONE_TREE_FILE " for output.\n" );
-		exit( 1 );
+	rc = sqlite3_open(PHONE_TREE_FILE,&db);
+	if(rc) {
+	  fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+	  sqlite3_close(db);
+	  exit(1);
 	}
+
+	rc = sqlite3_exec(db, "CREATE TABLE tree (phone_id,phrase_id,child_begin,child_end)", NULL, NULL, &zErrMsg);
+	if( rc!=SQLITE_OK ) {fprintf(stderr, "A SQL error: %s\n", zErrMsg); }
+
+	rc = sqlite3_prepare(db, "INSERT INTO tree VALUES (?,?,?,?)" , -1 , &st , (const char **)&buf);
+	if( rc!=SQLITE_OK ) { fprintf(stderr, "B SQL error: %d\n", rc);}
+
+	rc = sqlite3_exec(db, "BEGIN", NULL, NULL, &zErrMsg);
+	if( rc!=SQLITE_OK ) {fprintf(stderr, "C SQL error: %s\n", zErrMsg);} 
 
 	QueuePut( root );
 	while ( ! QueueEmpty() ) {
 		pNode = QueueGet();
-		
-		fprintf( output, "%hu ", pNode->key );
-		fprintf( output, "%d ", pNode->phraseno );
+
+		sqlite3_bind_int(st, 1, pNode->key);
+		sqlite3_bind_int(st, 2, pNode->phraseno);
 
 		/* compute the begin and end index */
 		pList = pNode->childList;
 		if( pList ) {
-			fprintf( output, "%d ", pList->pNode->nodeno );
-
+			sqlite3_bind_int(st, 3, pList->pNode->nodeno);
 			for ( ; pList->next; pList = pList->next ) {
 				QueuePut( pList->pNode );
 			}
 			QueuePut( pList->pNode );
-			fprintf( output, "%d\n", pList->pNode->nodeno );
+			sqlite3_bind_int(st, 4, pList->pNode->nodeno);
+		} else {
+			sqlite3_bind_int(st, 3, -1);
+			sqlite3_bind_int(st, 4, -1);
 		}
-		else
-			fprintf( output, "-1 -1\n" );
-
+		sqlite3_step(st);
+		sqlite3_reset(st);
 	}
-	fclose( output );
+
+	rc = sqlite3_exec(db, "COMMIT", NULL, NULL, &zErrMsg);
+	if( rc!=SQLITE_OK ) {fprintf(stderr, "D SQL error: %s\n", zErrMsg);} 
+
+	sqlite3_close(db);
 }
 
 int main()

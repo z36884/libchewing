@@ -7,4 +7,5 @@ sort_word_SOURCES = sort_word.c
 sort_dic_LDADD = ../common/libcommon.la
 sort_dic_SOURCES = sort_dic.c
 
+maketree_LDADD = -lsqlite3
 maketree_SOURCES = maketree.c
