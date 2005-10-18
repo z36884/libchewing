@@ -133,6 +133,7 @@ int InitChewing( void *iccf, ChewingConf *cf )
 	memset( pgdata->bUserArrCnnct, 0, sizeof( int ) * ( MAX_PHONE_SEQ_LEN + 1 ) );
 	memset( pgdata->bUserArrBrkpt, 0, sizeof( int ) * ( MAX_PHONE_SEQ_LEN + 1 ) );
 	pgdata->bChiSym = CHINESE_MODE;
+	pgdata->bFullShape = HALFSHAPE_MODE;
 	pgdata->bSelect = 0;
 	pgdata->nSelect = 0;
 	pgdata->PointStart = -1;
@@ -203,6 +204,17 @@ int GetChiEngMode( void *iccf )
 	return ( (ChewingData *) iccf )->bChiSym;
 }
 
+void SetShapeMode( void *iccf, int mode )
+{
+	ChewingData *pgdata = (ChewingData *) iccf;
+	pgdata->bFullShape = (mode == FULLSHAPE_MODE ? 1 : 0);
+}
+
+int GetShapeMode( void *iccf ) 
+{
+	return ( (ChewingData *) iccf )->bFullShape;
+}
+
 static void CheckAndResetRange( ChewingData *pgdata )
 {
 	if ( pgdata->PointStart > -1 ) {
@@ -237,6 +249,7 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 	int keystrokeRtn = KEYSTROKE_ABSORB;
 	int toSelect = 0;
 	int rtn;
+	int bQuickCommit = 0;
 
 	/* check if Old Chewing style */
 	if ( ! pgdata->config.bSpaceAsSelection ) {
@@ -253,14 +266,58 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
 		rtn = SymbolInput( ' ', pgdata );
+		if ( pgdata->bFullShape ) {
+			rtn = FullShapeSymbolInput( ' ', pgdata );
+		}
+		else {
+			rtn = SymbolInput( ' ', pgdata );
+		}
 		pgo->commitStr[ 0 ].wch = pgdata->chiSymbolBuf[ 0 ].wch;
 		pgo->nCommitStr = 1;
 		pgdata->chiSymbolBufLen = 0;
 		pgdata->chiSymbolCursor = 0;
 		keystrokeRtn = KEYSTROKE_COMMIT;
 	} else if ( pgdata->bChiSym != CHINESE_MODE ) {
-		rtn = SymbolInput( ' ', pgdata );
+		/* see if buffer contains nothing */
+		if ( pgdata->chiSymbolBufLen == 0 ) {
+			bQuickCommit = 1;
+		}
+		if ( pgdata->bFullShape ) {
+			rtn = FullShapeSymbolInput( ' ', pgdata );
+		}
+		else {
+			rtn = SymbolInput( ' ', pgdata );
+		}
 		keystrokeRtn = KEYSTROKE_ABSORB;
+
+		if ( rtn == SYMBOL_KEY_ERROR ) {
+			keystrokeRtn = KEYSTROKE_IGNORE;
+			/*
+			 * If the key is not a printable symbol, 
+			 * then it's wrongto commit it.
+			 */
+			bQuickCommit = 0;
+		} 
+		else {
+			keystrokeRtn = KEYSTROKE_ABSORB;
+		}
+
+		if ( ! bQuickCommit ) {
+                       CallPhrasing( pgdata );
+                       if( ReleaseChiSymbolBuf( pgdata, pgo ) != 0 )
+                               keystrokeRtn = KEYSTROKE_COMMIT;
+               }
+               /* Quick commit */
+               else {
+                       DEBUG_OUT(
+                               "\t\tQuick commit buf[0]=%c\n", 
+                               pgdata->chiSymbolBuf[ 0 ].s[ 0 ] );
+                       pgo->commitStr[ 0 ].wch = pgdata->chiSymbolBuf[ 0 ].wch; 
+                       pgo->nCommitStr = 1;
+                       pgdata->chiSymbolBufLen = 0;
+                       pgdata->chiSymbolCursor = 0;
+                       keystrokeRtn = KEYSTROKE_COMMIT;
+               }
 	} else {
 		rtn = ZuinPhoInput( &( pgdata->zuinData ), ' ' );
 		switch ( rtn ) {
@@ -857,6 +914,12 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 					}
 
 					rtn = SymbolInput( key, pgdata );
+					if ( pgdata->bFullShape ) {
+						rtn = FullShapeSymbolInput( key, pgdata );
+					}
+					else {
+						rtn = SymbolInput( key, pgdata );
+					}
 					if ( rtn == SYMBOL_KEY_ERROR ) {
 						keystrokeRtn = KEYSTROKE_IGNORE;
 						/*
@@ -877,7 +940,14 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 			if ( pgdata->chiSymbolBufLen == 0 ) {
 				bQuickCommit = 1;
 			}
-			rtn = SymbolInput( key, pgdata );
+
+			if ( pgdata->bFullShape ) {
+				rtn = FullShapeSymbolInput( key, pgdata );
+			}
+			else {
+				rtn = SymbolInput( key, pgdata );
+			}
+
 			if ( rtn == SYMBOL_KEY_ERROR ) {
 				keystrokeRtn = KEYSTROKE_IGNORE;
 				bQuickCommit = 0;
