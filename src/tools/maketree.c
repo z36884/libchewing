@@ -33,6 +33,7 @@
 #include <assert.h>
 
 #include "global.h"
+#include "tree.h"
 
 /*
 	defines
