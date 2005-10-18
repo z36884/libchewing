@@ -20,7 +20,6 @@ extern "C" {
 #include "chewingutil.h"
 #include "dict.h"
 #include "global.h"
-#include "hash.h"
 #include "userphrase.h"
 #include "zuin.h"
 #include "hanyupinying.h"

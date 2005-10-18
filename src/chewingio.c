@@ -24,7 +24,6 @@
 #include "global.h"
 #include "zuin.h"
 #include "chewingutil.h"
-#include "userphrase.h"
 #include "private.h"
 
 #ifdef ENABLE_DEBUG
@@ -905,13 +904,6 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 					sizeof( char ) * 2 * newPhraseLen );
 				addWordSeq[ newPhraseLen * 2 ] = '\0';
 
-				phraseState = UserUpdatePhrase( addPhoneSeq, addWordSeq );
-				SetUpdatePhraseMsg( 
-					pgdata, 
-					addWordSeq, 
-					newPhraseLen, 
-					phraseState );
-
 				/* Clear the breakpoint between the New Phrase */
 				for ( i = 1; i < newPhraseLen; i++ )
 					pgdata->bUserArrBrkpt[ pgdata->cursor + i ] = 0;
@@ -937,13 +929,6 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 					&pgdata->phrOut.chiBuf[ ( pgdata->cursor - newPhraseLen ) * 2 ],
 					sizeof( char ) * 2 * newPhraseLen );
 				addWordSeq[ newPhraseLen * 2 ] = '\0';
-
-				phraseState = UserUpdatePhrase( addPhoneSeq, addWordSeq );
-				SetUpdatePhraseMsg( 
-					pgdata, 
-					addWordSeq, 
-					newPhraseLen, 
-					phraseState );
 
 				/* Clear the breakpoint between the New Phrase */
 				for ( i = 1; i < newPhraseLen; i++ )

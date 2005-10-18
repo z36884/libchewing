@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "userphrase.h"
 #include "global.h"
 #include "dict.h"
 #include "char.h"
@@ -111,73 +110,6 @@ int CheckUserChoose(
 		char selectStr[][ MAX_PHONE_SEQ_LEN * 2 + 1 ], 
 		IntervalType selectInterval[], int nSelect )
 {
-	IntervalType inte, c;
-	int chno, len;
-	int user_alloc;
-	UserPhraseData *pUserPhraseData;
-	Phrase *p_phr = ALC( Phrase, 1 );
-
-	assert( p_phr );
-	inte.from = from;
-	inte.to = to;
-	*pp_phr = NULL;
-
-	/* pass 1
-	 * if these exist one selected interval which is not contained by inte
-	 * but has intersection with inte, then inte is an unacceptable interval
-	 */
-	for ( chno = 0; chno < nSelect; chno++ ) {
-		c = selectInterval[ chno ];
-		if ( IsIntersect( inte, c ) && ! IsContain( inte, c ) ) {
-			free( p_phr );
-			return 0;
-		}
-	}
-
-	/* pass 2
-	 * if there exist one phrase satisfied all selectStr then return 1, else return 0.
-	 * also store the phrase with highest freq
-	 */
-	pUserPhraseData = UserGetPhraseFirst( new_phoneSeq );
-	p_phr->freq = -1;
-	do {
-		for ( chno = 0; chno < nSelect; chno++ ) {
-			c = selectInterval[ chno ];
-
-			if ( IsContain( inte, c ) ) {
-				/* 
-				 * find a phrase of ph_id where the text contains 
-				 * 'selectStr[chno]' test if not ok then return 0, 
-				 * if ok then continue to test. */
-				len = c.to - c.from;
-				if ( memcmp( 
-					&pUserPhraseData->wordSeq[ ( c.from - from ) * 2 ], 
-					selectStr[ chno ], 
-					len * 2 ) )
-					break;
-			}
-
-		}
-		if ( chno == nSelect ) {
-			/* save phrase data to "pp_phr" */
-			if ( pUserPhraseData->userfreq > p_phr->freq ) {
-				if ( ( user_alloc = ( to - from ) ) > 0 ) {
-					memcpy( 
-						p_phr->phrase, 
-						pUserPhraseData->wordSeq, 
-						user_alloc *  2 * sizeof( char ) );
-				}
-				p_phr->phrase[ user_alloc * 2 ] = '\0';
-				p_phr->freq = pUserPhraseData->userfreq;
-				*pp_phr = p_phr;
-			}
-		}
-	} while ( ( pUserPhraseData = UserGetPhraseNext( new_phoneSeq ) ) != NULL );
-
-	if ( p_phr->freq != -1 ) 
-		return 1;
-		
-	free( p_phr );
 	return 0;
 }
 
@@ -288,13 +220,6 @@ void FindInterval(
 				sizeof( uint16 ) * ( end - begin + 1 ) );
 			new_phoneSeq[ end - begin + 1 ] = 0;
 			puserphrase = pdictphrase = NULL;
-
-			/* check user phrase */
-			if ( UserGetPhraseFirst( new_phoneSeq ) &&
-					CheckUserChoose( new_phoneSeq, begin, end + 1, 
-					&p_phrase, selectStr, selectInterval, nSelect ) ) {
-				puserphrase = p_phrase;
-			}
 
 			/* check dict phrase */
 			pho_id = TreeFindPhrase( begin, end, phoneSeq );

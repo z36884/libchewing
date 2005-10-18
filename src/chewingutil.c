@@ -354,8 +354,6 @@ void CleanAllBuf( ChewingData *pgdata )
 int ReleaseChiSymbolBuf( ChewingData *pgdata, ChewingOutput *pgo )
 {
 	int throwEnd;
-	uint16 bufPhoneSeq[ MAX_PHONE_SEQ_LEN + 1 ];
-	char bufWordSeq[ MAX_PHONE_SEQ_LEN * 2 + 1 ];
 
 	throwEnd = CountReleaseNum( pgdata );
 
@@ -366,14 +364,6 @@ int ReleaseChiSymbolBuf( ChewingData *pgdata, ChewingOutput *pgo )
 		 * And release from "chiSymbolBuf" && "phoneSeq"
 		 */
 		WriteChiSymbolToBuf( pgo->commitStr, throwEnd, pgdata );
-
-		/* Add to userphrase */
-		memcpy( bufPhoneSeq, pgdata->phoneSeq, sizeof( uint16 ) * throwEnd );
-		bufPhoneSeq[ throwEnd ] = (uint16) 0;
-		memcpy( bufWordSeq, pgdata->phrOut.chiBuf, sizeof( char ) * throwEnd * 2 );
-		bufWordSeq[ throwEnd * 2 ] = '\0';
-		UserUpdatePhrase( bufPhoneSeq, bufWordSeq );
-
 		KillFromLeft( pgdata, throwEnd );
 	}
 	return throwEnd;
@@ -381,22 +371,6 @@ int ReleaseChiSymbolBuf( ChewingData *pgdata, ChewingOutput *pgo )
 
 void AutoLearnPhrase( ChewingData *pgdata )
 {
-	uint16 bufPhoneSeq[ MAX_PHONE_SEQ_LEN + 1 ];
-	char bufWordSeq[ MAX_PHONE_SEQ_LEN * 2 + 1 ];
-	int i, from, len;
-
-	for ( i = 0; i < pgdata->nPrefer; i++ ) {
-		from = pgdata->preferInterval[ i ].from;
-		len = pgdata->preferInterval[i].to - from;
-		memcpy( bufPhoneSeq, &pgdata->phoneSeq[ from ], sizeof( uint16 ) * len );
-		bufPhoneSeq[ len ] = (uint16) 0;
-		memcpy( 
-			bufWordSeq, 
-			&pgdata->phrOut.chiBuf[ from * 2 ], 
-			sizeof( char ) * len * 2 );
-		bufWordSeq[ len * 2 ] = '\0';
-		UserUpdatePhrase( bufPhoneSeq, bufWordSeq );
-	}
 }
 
 int AddChi( uint16 phone, ChewingData *pgdata )

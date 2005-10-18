@@ -23,7 +23,6 @@
 #include "dict.h"
 #include "char.h"
 #include "chewingutil.h"
-#include "userphrase.h"
 
 #define CEIL_DIV( a, b ) 	( ( a + b - 1 ) / b )
 
@@ -95,14 +94,8 @@ void SetAvailInfo(
 				&phoneSeq[ begin ], 
 				sizeof( uint16 ) * ( diff + 1 ) ) ;
 			userPhoneSeq[ diff + 1 ] = 0;
-			if ( UserGetPhraseFirst( userPhoneSeq ) ) {
-				/* save it! */
-				pai->avail[ pai->nAvail ].len = diff + 1;
-				pai->avail[ pai->nAvail ].id = -1;
-			} else {
-				pai->avail[ pai->nAvail ].len = 0;
-				pai->avail[ pai->nAvail ].id = -1;
-			}
+			pai->avail[ pai->nAvail ].len = 0;
+			pai->avail[ pai->nAvail ].id = -1;
 		}
 	}
 }
@@ -130,7 +123,6 @@ void SetChoiceInfo(
 	Word tempWord;
 	Phrase tempPhrase;
 	int len;
-	UserPhraseData *pUserPhraseData;
 	uint16 userPhoneSeq[ MAX_PHONE_SEQ_LEN ];
 
 	pci->nTotalChoice = 0;
@@ -170,25 +162,6 @@ void SetChoiceInfo(
 
 		memcpy( userPhoneSeq, &phoneSeq[ cursor ], sizeof( uint16 ) * len );
 		userPhoneSeq[ len ] = 0;
-		pUserPhraseData = UserGetPhraseFirst( userPhoneSeq );
-		if ( pUserPhraseData ) {
-			do {
-				/* check if the phrase is already in the choice list */
-				if ( ChoiceTheSame( 
-					pci, 
-					pUserPhraseData->wordSeq, 
-					len * 2 * sizeof( char ) ) )
-					continue;
-				/* otherwise store it */
-				memcpy( 
-					pci->totalChoiceStr[ pci->nTotalChoice ], 
-					pUserPhraseData->wordSeq, 
-					sizeof( char ) * len * 2 );
-				pci->totalChoiceStr[ pci->nTotalChoice ][ len * 2 ] = '\0';
-				pci->nTotalChoice++;
-			} while( ( pUserPhraseData = 
-				UserGetPhraseNext( userPhoneSeq ) ) != NULL );
-		}
 
 	}
 
@@ -284,7 +257,6 @@ void ChangeUserData( ChewingData *pgdata, int selectNo )
 		&( pgdata->phoneSeq[ pgdata->cursor ] ), 
 		len * sizeof( uint16 ) );
 	userPhoneSeq[ len ] = 0;
-	UserUpdatePhrase( userPhoneSeq, pgdata->choiceInfo.totalChoiceStr[ selectNo ] );
 }
 
 /** @brief commit the selected phrase. */
