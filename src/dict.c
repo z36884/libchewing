@@ -16,9 +16,15 @@
 #include <assert.h>
 #include <string.h>
 
+#include <windows.h>
+
 #include "dict.h"
 
-static int begin[ PHONE_PHRASE_NUM + 1 ];
+#ifdef	USE_BINARY_DAT
+	static int *begin = NULL;
+#else
+	static int begin[ PHONE_PHRASE_NUM + 1 ];
+#endif
 static FILE *dictfile;
 static int end_pos;
 
@@ -43,6 +49,11 @@ static void TerminateDict()
 {
 	if ( dictfile )
 		fclose( dictfile );
+
+#ifdef	USE_BINARY_DAT
+	if( begin )
+		free( begin );
+#endif
 }
 
 int InitDict( const char *prefix )
@@ -54,6 +65,9 @@ int InitDict( const char *prefix )
 #ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, DICT_FILE );
 #else
+	HANDLE hInFile;
+	DWORD read_len;
+	DWORD file_size;
 	sprintf( filename, "%s\\%s", prefix, DICT_FILE );
 #endif
 	dictfile = fopen( filename, "r" );
@@ -65,21 +79,24 @@ int InitDict( const char *prefix )
 	#endif
 
 #ifdef	USE_BINARY_DAT
-	indexfile = fopen( filename, "rb" );
+	hInFile = CreateFile( filename, FILE_READ_DATA, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+
+	if( hInFile == INVALID_HANDLE_VALUE  )
+		return 0;
+
+	file_size = GetFileSize( hInFile, NULL);
+	if(	begin = (int*)malloc(file_size + sizeof(int)) )
+		ReadFile( hInFile, begin, file_size, &read_len, NULL);
+
+	CloseHandle(hInFile);
 #else
 	indexfile = fopen( filename, "r" );
-#endif
 	assert( dictfile && indexfile );
 	i = 0;
 	while ( !feof( indexfile ) )
-	{
-		#ifdef	USE_BINARY_DAT
-			fread( &begin[ i++ ], sizeof(int), 1, indexfile );
-		#else
-			fscanf( indexfile, "%d", &begin[ i++ ] );
-		#endif
-	}
+		fscanf( indexfile, "%d", &begin[ i++ ] );
 	fclose( indexfile );
+#endif
 	addTerminateService( TerminateDict );
 	return 1;
 }

@@ -27,8 +27,11 @@
 
 #define CEIL_DIV( a, b ) 	( ( a + b - 1 ) / b )
 
-
-TreeType tree[ TREE_SIZE ];
+#ifdef	USE_BINARY_DAT
+	TreeType *tree = NULL;
+#else
+	TreeType tree[ TREE_SIZE ];
+#endif
 
 void ChangeSelectIntervalAndBreakpoint( ChewingData *pgdata, int from, int to, char *str )
 {

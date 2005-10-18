@@ -24,8 +24,18 @@
 #include "char.h"
 #include "private.h"
 
-static uint16 arrPhone[ PHONE_NUM + 1 ];
-static int begin[ PHONE_NUM + 1 ];
+#ifdef WIN32
+	#include <windows.h>
+#endif
+
+#ifdef	USE_BINARY_DAT
+	static uint16* arrPhone = NULL;
+	static int *begin = NULL;
+	static char *phone_data_buf = NULL;
+#else
+	static uint16 arrPhone[ PHONE_NUM + 1 ];
+	static int begin[ PHONE_NUM + 1 ];
+#endif
 static FILE *dictfile;
 static int end_pos;
 
@@ -55,6 +65,11 @@ static void TerminateChar()
 {
 	if ( dictfile )
 		fclose( dictfile );
+
+#ifdef USE_BINARY_DAT
+	if( phone_data_buf )
+		free(phone_data_buf);
+#endif
 }
 
 int InitChar( const char *prefix )
@@ -62,12 +77,17 @@ int InitChar( const char *prefix )
 	FILE *indexfile;
 	char filename[ 100 ];
 	int i;
+	long file_size;
+	int phone_num;
 
 #ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, CHAR_FILE );
 #else
+	HANDLE hIndexFile;
+	DWORD read_len;
 	sprintf( filename, "%s\\%s", prefix, CHAR_FILE );
 #endif
+
 	dictfile = fopen( filename, "r" );
 
 #ifndef WIN32
@@ -75,24 +95,35 @@ int InitChar( const char *prefix )
 #else
 	sprintf( filename, "%s\\%s", prefix, CHAR_INDEX_FILE );
 #endif
+
 #ifdef	USE_BINARY_DAT
-	indexfile = fopen( filename, "rb" );
+	hIndexFile = CreateFile( filename, FILE_READ_DATA, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+	if ( ! dictfile || hIndexFile == INVALID_HANDLE_VALUE )
+		return 0;
+	file_size = GetFileSize( hIndexFile, NULL);
+	phone_num = file_size / (sizeof(int) + sizeof(uint16));
+	phone_data_buf = malloc( file_size );
+
+	if( !phone_data_buf || 
+		! ReadFile( hIndexFile, phone_data_buf, file_size, &read_len, NULL) )
+	{
+		CloseHandle(hIndexFile);
+		return 0;
+	}
+
+	begin = ((int*)phone_data_buf);
+	arrPhone = (uint16*)(begin + phone_num);
+
+	CloseHandle(hIndexFile);
 #else
 	indexfile = fopen( filename, "r" );
-#endif
 	if ( ! dictfile || ! indexfile )
 		return 0;
-
 	for ( i = 0; i <= PHONE_NUM; i++ )
-	{
-		#ifdef	USE_BINARY_DAT
-			fread( &arrPhone[ i ], sizeof(uint16), 1, indexfile );
-			fread( &begin[ i ], sizeof(int), 1, indexfile );
-		#else
-			fscanf( indexfile, "%hu %d", &arrPhone[ i ], &begin[ i ] );
-		#endif
-	}
+		fscanf( indexfile, "%hu %d", &arrPhone[ i ], &begin[ i ] );
 	fclose( indexfile );
+#endif
+
 	addTerminateService( TerminateChar );
 	return 1;
 }

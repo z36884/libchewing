@@ -27,6 +27,8 @@
 #include "char.h"
 #include "private.h"
 
+#include <windows.h>
+
 #define INTERVAL_SIZE ( ( MAX_PHONE_SEQ_LEN + 1 ) * MAX_PHONE_SEQ_LEN / 2 )
 
 typedef struct tagRecordNode {
@@ -44,7 +46,11 @@ typedef struct {
 	RecordNode *phList;  
 } TreeDataType;
 
-extern TreeType tree[ TREE_SIZE ];
+#ifdef	USE_BINARY_DAT
+	extern TreeType *tree;
+#else
+	extern TreeType tree[ TREE_SIZE ];
+#endif
 
 int IsContain( IntervalType in1, IntervalType in2 )
 {
@@ -76,6 +82,15 @@ int GetIntersection( IntervalType in1, IntervalType in2, IntervalType *in3 )
 	return 0;
 }
 
+#ifdef USE_BINARY_DAT
+static void TerminateTree()
+{
+	if( tree )
+		free(tree);
+}
+#endif
+
+
 void ReadTree( const char *prefix )
 {
 	int i;
@@ -85,11 +100,24 @@ void ReadTree( const char *prefix )
 #ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, PHONE_TREE_FILE );
 #else
+	HANDLE hInFile;
+	DWORD read_len;
+	DWORD file_size;
 	sprintf( filename, "%s\\%s", prefix, PHONE_TREE_FILE );
 #endif
 #ifdef	USE_BINARY_DAT
-	infile = fopen( filename, "rb" );
-	fread( tree, sizeof(TreeType), TREE_SIZE, infile );
+	hInFile = CreateFile( filename, FILE_READ_DATA, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+
+	if( hInFile == INVALID_HANDLE_VALUE  )
+		return;
+
+	file_size = GetFileSize( hInFile, NULL);
+	if(	tree = malloc(file_size) )
+		ReadFile( hInFile, tree, file_size, &read_len, NULL);
+
+	CloseHandle(hInFile);
+
+	addTerminateService( TerminateTree );
 #else
 	infile = fopen( filename, "r" );
 	assert( infile );
@@ -101,8 +129,8 @@ void ReadTree( const char *prefix )
 			&tree[ i ].child_end ) != 4 )
 			break;
 	}
-#endif
 	fclose( infile );
+#endif
 }
 
 int CheckBreakpoint( int from, int to, int bArrBrkpt[] )

@@ -33,7 +33,7 @@
 
 #define MAX_KBTYPE 10
 #define MAX_SELKEY 10
-#define TREE_SIZE (153251)
+#define TREE_SIZE (153281)
 #define WCH_SIZE 4
 #define ZUIN_SIZE 4
 #define PINYING_SIZE 10
