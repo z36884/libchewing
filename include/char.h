@@ -22,7 +22,7 @@
 #include "global.h"
 
 /* wc -l data/ch_index.dat - 1 */
-#define PHONE_NUM (1320)
+#define PHONE_NUM (1325)
 
 typedef struct {
 	char word[ 3 ];
