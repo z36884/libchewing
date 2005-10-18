@@ -201,7 +201,6 @@ void BFS2()
 	sqlite3_stmt *st;
 	char *zErrMsg = 0;
 	char *buf;
-	uint16 key;
 
 	rc = sqlite3_open(PHONE_TREE_FILE,&db);
 	if(rc) {
