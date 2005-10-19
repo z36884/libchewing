@@ -106,7 +106,7 @@ void ReadTree( const char *prefix )
 	sprintf( filename, "%s\\%s", prefix, PHONE_TREE_FILE );
 #endif
 #ifdef	USE_BINARY_DAT
-	hInFile = CreateFile( filename, FILE_READ_DATA, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+	hInFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
 
 	if( hInFile == INVALID_HANDLE_VALUE  )
 		return;

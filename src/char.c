@@ -97,7 +97,7 @@ int InitChar( const char *prefix )
 #endif
 
 #ifdef	USE_BINARY_DAT
-	hIndexFile = CreateFile( filename, FILE_READ_DATA, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+	hIndexFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
 	if ( ! dictfile || hIndexFile == INVALID_HANDLE_VALUE )
 		return 0;
 	file_size = GetFileSize( hIndexFile, NULL);
