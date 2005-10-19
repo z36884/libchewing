@@ -10,9 +10,7 @@ libchewing_la_SOURCES = \
 	chewingutil.c \
 	choice.c \
 	dict.c \
-	hash.c \
 	tree.c \
-	userphrase.c \
 	zuin.c \
 	hanyupinying.c
 libchewing_la_LIBADD = common/libcommon.la
