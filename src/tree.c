@@ -76,6 +76,13 @@ int GetIntersection( IntervalType in1, IntervalType in2, IntervalType *in3 )
 	return 0;
 }
 
+static void TerminateTree()
+{
+	if(tree) {
+		free((void*)tree);
+	}
+}
+
 void ReadTree( const char *prefix )
 {
 	int i;
@@ -83,7 +90,6 @@ void ReadTree( const char *prefix )
 	int rc;
 	sqlite3 *db;
 	sqlite3_stmt *st;
-	char *zErrMsg = 0;
 	char *buf;
 	int tree_size;
 
@@ -103,6 +109,7 @@ void ReadTree( const char *prefix )
 	tree_size = sqlite3_column_int(st,0) + 1;
 
 	tree = (TreeType*)calloc(tree_size, sizeof(TreeType));
+	addTerminateService( TerminateTree );
 
 	rc = sqlite3_prepare(db, "SELECT phone_id,phrase_id,child_begin,child_end FROM tree  ORDER by id" , -1 , &st , (const char **)&buf);
 	if( rc!=SQLITE_OK ) { fprintf(stderr, "SQL error (prepare SELECT) : %d\n", rc);}
@@ -117,6 +124,7 @@ void ReadTree( const char *prefix )
 		// Just in case (what kind of ?)
 		if(i >= tree_size) { break; }
 	}
+	sqlite3_finalize(st);
 	sqlite3_close(db);
 }
 
