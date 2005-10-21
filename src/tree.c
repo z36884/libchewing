@@ -48,6 +48,7 @@ typedef struct {
 
 #ifdef	USE_BINARY_DAT
 	extern TreeType *tree;
+	DWORD tree_size = 0;
 #else
 	extern TreeType tree[ TREE_SIZE ];
 #endif
@@ -111,7 +112,7 @@ void ReadTree( const char *prefix )
 	if( hInFile == INVALID_HANDLE_VALUE  )
 		return;
 
-	file_size = GetFileSize( hInFile, NULL);
+	tree_size = file_size = GetFileSize( hInFile, NULL);
 	if(	tree = malloc(file_size) )
 		ReadFile( hInFile, tree, file_size, &read_len, NULL);
 
@@ -272,21 +273,32 @@ int CheckChoose(
 int TreeFindPhrase( int begin, int end, const uint16 *phoneSeq )
 {
 	int child, tree_p, i;
-
 	tree_p = 0;
 	for ( i = begin; i <= end; i++ ) {
 		for ( 
 			child = tree[ tree_p ].child_begin;
 			child <= tree[ tree_p ].child_end;
 			child++ ) {
+			/* This is a workaround to prevent access violation
+			   Sometimes, child < 0 and tree[ child ] refer to an invalid 
+			   address for unknown reason.This could be a bug of libchewing.
+			   This serious bug was discovered by seamxr.
+			*/
+			if( child < 0 || child * sizeof(TreeType) > tree_size )
+				return -1;
+
 			if ( tree[ child ].phone_id == phoneSeq[ i ] )
 				break;
 		}
-		/* if not found any word then fail. */
+
 		if ( child > tree[ tree_p ].child_end )
 			return -1;
 		else
+		{
+			if( tree_p == 115190 )
+				tree_p = tree_p;
 			tree_p = child;
+		}
 	}
 	return tree[ tree_p ].phrase_id;
 }
