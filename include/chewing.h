@@ -22,6 +22,7 @@ extern "C" {
 #include "global.h"
 #include "zuin.h"
 #include "hanyupinying.h"
+#include "tree.h"
 
 /* statistics symbol reported by chewing */
 extern int chewing_lifetime;
