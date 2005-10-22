@@ -32,9 +32,11 @@
 	static uint16* arrPhone = NULL;
 	static int *begin = NULL;
 	static char *phone_data_buf = NULL;
+	int phone_num;
 #else
 	static uint16 arrPhone[ PHONE_NUM + 1 ];
 	static int begin[ PHONE_NUM + 1 ];
+	const int phone_num = PHONE_NUM;
 #endif
 static FILE *dictfile;
 static int end_pos;
@@ -78,7 +80,6 @@ int InitChar( const char *prefix )
 	char filename[ 100 ];
 	int i;
 	long file_size;
-	int phone_num;
 
 #ifndef WIN32
 	sprintf( filename, "%s/%s", prefix, CHAR_FILE );
@@ -119,7 +120,7 @@ int InitChar( const char *prefix )
 	indexfile = fopen( filename, "r" );
 	if ( ! dictfile || ! indexfile )
 		return 0;
-	for ( i = 0; i <= PHONE_NUM; i++ )
+	for ( i = 0; i <= phone_num; i++ )
 		fscanf( indexfile, "%hu %d", &arrPhone[ i ], &begin[ i ] );
 	fclose( indexfile );
 #endif
@@ -142,7 +143,7 @@ int GetCharFirst( Word *wrd_ptr, uint16 phoneid )
 	uint16 *pinx;
 
 	pinx = (uint16 *) bsearch( 
-		&phoneid, arrPhone, PHONE_NUM, 
+		&phoneid, arrPhone, phone_num, 
 		sizeof( uint16 ), (CompFuncType) CompUint16 );
 	if ( ! pinx )
 		return 0;
