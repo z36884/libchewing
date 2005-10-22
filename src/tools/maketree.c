@@ -211,6 +211,7 @@ void BFS2()
 
 	rc = sqlite3_exec(db, "CREATE TABLE tree (id,phone_id,phrase_id,child_begin,child_end)", NULL, NULL, &zErrMsg);
 	if( rc!=SQLITE_OK ) {fprintf(stderr, "A SQL error: %s\n", zErrMsg); }
+	rc = sqlite3_exec(db, "CREATE INDEX tree_index ON tree (id)", NULL, NULL, &zErrMsg);
 
 	rc = sqlite3_prepare(db, "INSERT INTO tree VALUES (?,?,?,?,?)" , -1 , &st , (const char **)&buf);
 	if( rc!=SQLITE_OK ) { fprintf(stderr, "B SQL error: %d\n", rc);}

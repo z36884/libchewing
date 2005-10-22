@@ -46,6 +46,9 @@ typedef struct {
 
 TreeType *tree;
 
+sqlite3 *db;
+sqlite3_stmt *stFetch;
+
 int IsContain( IntervalType in1, IntervalType in2 )
 {
 	return ( in1.from <= in2.from && in1.to >= in2.to );
@@ -78,9 +81,12 @@ int GetIntersection( IntervalType in1, IntervalType in2, IntervalType *in3 )
 
 static void TerminateTree()
 {
-	if(tree) {
+	if(tree)
 		free((void*)tree);
-	}
+	if(db)
+		free((void*)db);
+	if(stFetch)
+		sqlite3_finalize(stFetch);
 }
 
 void ReadTree( const char *prefix )
@@ -88,7 +94,6 @@ void ReadTree( const char *prefix )
 	int i;
 	char filename[ 100 ];
 	int rc;
-	sqlite3 *db;
 	sqlite3_stmt *st;
 	char *buf;
 	int tree_size;
@@ -102,30 +107,17 @@ void ReadTree( const char *prefix )
 		exit(1);
 	}
 
-	
+	rc = sqlite3_prepare(db, "SELECT id,phone_id,phrase_id,child_begin,child_end FROM tree WHERE id = ?" , -1 , &stFetch , (const char **)&buf);
+	if( rc!=SQLITE_OK ) { fprintf(stderr, "SQL error (prepare SELECT): %d\n", rc);}
+
 	rc = sqlite3_prepare(db, "SELECT max(id) FROM tree" , -1 , &st , (const char **)&buf);
 	rc = sqlite3_step(st);
 	if( rc!=SQLITE_ROW ) { fprintf(stderr, "SQL error: %d\n", rc);}
 	tree_size = sqlite3_column_int(st,0) + 1;
-
 	tree = (TreeType*)calloc(tree_size, sizeof(TreeType));
-	addTerminateService( TerminateTree );
 
-	rc = sqlite3_prepare(db, "SELECT phone_id,phrase_id,child_begin,child_end FROM tree  ORDER by id" , -1 , &st , (const char **)&buf);
-	if( rc!=SQLITE_OK ) { fprintf(stderr, "SQL error (prepare SELECT) : %d\n", rc);}
-
-	i = 0;
-	while(SQLITE_ROW == sqlite3_step(st)) {
-		tree[i].phone_id    = (uint16)sqlite3_column_int(st,0);
-		tree[i].phrase_id   = sqlite3_column_int(st,1);
-		tree[i].child_begin = sqlite3_column_int(st,2);
-		tree[i].child_end   = sqlite3_column_int(st,3);
-		i++;
-		// Just in case (what kind of ?)
-		if(i >= tree_size) { break; }
-	}
 	sqlite3_finalize(st);
-	sqlite3_close(db);
+	addTerminateService( TerminateTree );
 }
 
 int CheckBreakpoint( int from, int to, int bArrBrkpt[] )
@@ -194,6 +186,20 @@ int CheckChoose(
 	return 0;
 }
 
+int TreeFetchNode(int id) {
+	if(!tree[id].fetched) {
+		sqlite3_reset(stFetch);
+		sqlite3_bind_int(stFetch, 1, id);
+		sqlite3_step(stFetch);
+
+		tree[id].phone_id    = sqlite3_column_int(stFetch, 1);
+		tree[id].phrase_id   = sqlite3_column_int(stFetch, 2);
+		tree[id].child_begin = sqlite3_column_int(stFetch, 3);
+		tree[id].child_end   = sqlite3_column_int(stFetch, 4);
+		tree[id].fetched     = 1;
+	}
+}
+
 /** @brief search for the phrases have the same pronunciation.*/
 /* if phoneSeq[a] ~ phoneSeq[b] is a phrase, then add an interval
  * from (a) to (b+1) */
@@ -203,10 +209,13 @@ int TreeFindPhrase( int begin, int end, const uint16 *phoneSeq )
 
 	tree_p = 0;
 	for ( i = begin; i <= end; i++ ) {
+		TreeFetchNode(tree_p);
 		for ( 
 			child = tree[ tree_p ].child_begin;
 			child <= tree[ tree_p ].child_end;
 			child++ ) {
+			if ( child == -1 ) continue;
+			TreeFetchNode(child);
 			if ( tree[ child ].phone_id == phoneSeq[ i ] )
 				break;
 		}
@@ -767,7 +776,3 @@ int Phrasing(
 	return 0;
 }
 
-
-// Local Variables:
-// c-indentation-style: linux
-// End:

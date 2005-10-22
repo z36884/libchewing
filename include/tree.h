@@ -17,6 +17,7 @@ typedef struct {
 	uint16 phone_id;
 	int phrase_id;
 	int child_begin, child_end;
+	int fetched;
 } TreeType;
 
 /* tree.c */
