@@ -1093,8 +1093,10 @@ int OnKeyNumlock( void *iccf, int key, ChewingOutput *pgo )
 		 * and submit the words. 
 		 */
 		int num = -1;
-		if ( key > '0' && key < '8' )
+		if ( key > '0' && key <= '9' )
 			num = key - '1';
+		else if ( key == '0' )
+			num = 9;
 		DoSelect( pgdata, num );
  	}
 	CallPhrasing( pgdata );
