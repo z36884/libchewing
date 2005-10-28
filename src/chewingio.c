@@ -241,6 +241,12 @@ static int DoSelect( ChewingData *pgdata, int num )
 				AddSelect( pgdata, num );
 				/* second, call choice module */
 				ChoiceSelect( pgdata, num );
+                /* automatically shift the cursor to next phrase */
+                if ( pgdata->bAutoShiftCur!=0 ) {
+                    int len = pgdata->availInfo.avail[ pgdata->availInfo.currentAvail ].len;
+                    pgdata->chiSymbolCursor += len;
+                    pgdata->cursor += len;
+                }
 			}
 			return 1;
 		}
