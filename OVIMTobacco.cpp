@@ -8,9 +8,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-//#include <sys/syslimits.h>	for PATH_MAX
+
+#ifdef WIN32
+	#define strcasecmp stricmp
+#endif
+
 #include "OVKeySequence.h"
 #include "OVSQLite3.h"
+
+#ifndef WIN32
+	//#include <sys/syslimits.h>	//for PATH_MAX
+	#include <unistd.h>
+#else
+	#include <windows.h>
+	#define PATH_MAX MAX_PATH
+#endif
 
 #include <string>
 
@@ -141,6 +153,7 @@ protected:
     bool cfgDoClearSequenceOnError;
 };
 
+/*
 class OVOFReverseLookupSQLite : public OVOutputFilter
 {
 public:
@@ -154,14 +167,14 @@ protected:
     char idstr[256];
     char composebuffer[1024];
 };
-
+*/
 
 extern "C" unsigned int OVGetLibraryVersion() {
     return OV_VERSION;
 }
 extern "C" int OVInitializeLibrary(OVService*, const char*p) { 
     db=new SQLite3;  // this never gets deleted, but so do we
-    char dbfile[256];
+    char dbfile[PATH_MAX];
     sprintf(dbfile, "%s/OVIMTobacco/imtables.db", p);
     if (int err=db->open(dbfile)) {
         murmur("SQLite3 error! code=%d", err);
@@ -179,13 +192,17 @@ extern "C" int OVInitializeLibrary(OVService*, const char*p) {
 extern "C" OVModule *OVGetModuleFromLibrary(int x) {
     if(x < IM_TABLES) {
 	return new OVIMTobacco(IM_TABLE_NAMES[x]);
-    } else if (x < IM_TABLES * 2) {
+    }
+	/*
+	else if (x < IM_TABLES * 2) {
 	int n = x - IM_TABLES;
 	return new OVOFReverseLookupSQLite(IM_TABLE_NAMES[n]);
     }
+	*/
     return NULL;
 }
 
+/*
 OVOFReverseLookupSQLite::OVOFReverseLookupSQLite(char *name) {
     strcpy(table, name);
     sprintf(idstr,"OVOFReverseLookupSQLite-%s",name);
@@ -198,7 +215,7 @@ const char* OVOFReverseLookupSQLite::identifier() {
 const char* OVOFReverseLookupSQLite::localizedName(const char* lc) {
     static char buf[256];
     const char *name;
-    if(!strcmp(lc,"zh_TW")) {
+    if(!strcasecmp(lc,"zh_TW")) {
 	name=QueryForKey(db, table, "_property_cname");
     } else {
 	name=QueryForKey(db, table, "_property_ename");
@@ -240,7 +257,7 @@ const char* OVOFReverseLookupSQLite::process(const char *src, OVService *srv)
     if(strlen(composebuffer)) srv->notify(composebuffer);
     return src;
 }
-
+*/
 
 OVIMTobacco::OVIMTobacco(char *name) {
     strcpy(table, name);
@@ -310,7 +327,7 @@ const char *OVIMTobacco::identifier() {
 const char *OVIMTobacco::localizedName(const char *lc) {
     static char buf[256];
     const char *name;
-    if(!strcmp(lc,"zh_TW")) {
+    if(!strcasecmp(lc,"zh_TW")) {
 	name=QueryForKey(db, table, "_property_cname");
     } else {
 	name=QueryForKey(db, table, "_property_ename");
@@ -359,7 +376,8 @@ int OVIMTobaccoContext::keyEvent(OVKeyCode* pk, OVBuffer* pb, OVCandidate* pc, O
     if (k->code()==ovkEsc) return keyEsc();
     if (k->code()==ovkBackspace || k->code()==ovkDelete) return keyRemove();
     if (k->code()==ovkSpace && !seq.isEmpty()) return keyCompose();
-    if (k->code()==ovkSpace && seq.isEmpty()) return setCandidate();
+    if ((k->code()==ovkSpace || k->code()==ovkDown) && seq.isEmpty())
+		return setCandidate();
     if (k->code()==ovkReturn) return keyCommit();
     if (k->code()==ovkLeft || k->code()==ovkRight) return keyMove();
     if (isprint(k->code())) return keyPrintable();
@@ -521,9 +539,15 @@ void OVIMTobaccoContext::freshBuffer() {
             ->update(position, position-1, position);
     }
     else
-        b->clear()
-            ->append(predictor->composedString.c_str())
-            ->update(position, position-1, position);
+	{
+		b->clear();
+		if(predictor->composedString.length() > 0)
+			b->append(predictor->composedString.c_str());
+		if(strlen(seq.sequence()) > 0)
+			b->append(seq.compose());
+
+		b->update(position, position-1, position);
+	}
 }
 
 int OVIMTobaccoContext::keyNonRadical() {
@@ -542,8 +566,8 @@ int OVIMTobaccoContext::isPunctuationCombination() {
     // only accept CTRL-1 or CTRL-0
     if (k->isCtrl() && !k->isOpt() && !k->isCommand() &&
         (k->code()=='1' || k->code()=='0')) return 1;
-    // only accept CTRL-OPT-[printable]
-    if (k->isCtrl() && k->isOpt() && !k->isCommand() && !k->isShift() && 
+    // only accept CTRL-OPT(ALT)-[printable]
+    if (k->isCtrl() && (k->isOpt() || k->isAlt()) && !k->isCommand() && !k->isShift() && 
         ((k->code() >=1 && k->code() <=26) || isprint(k->code()))) return 1;
     return 0;
 }
@@ -820,7 +844,8 @@ int OVIMTobaccoContext::closeCandidateWindow() {
     seq.clear();
     if (c->onScreen()) c->hide()->clear()->update();
     if (candi) {
-        delete candi;
+		//< b6s: this crashed win32 version.
+        //delete candi;
         candi=NULL;
     }
     return 1;

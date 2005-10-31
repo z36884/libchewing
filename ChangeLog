@@ -1,3 +1,13 @@
+2005-10-31  Jim Huang  <jserv@kaffe.org>
+
+	* tobacco-sqlconvert_general.pl,
+	punctuation.src: New file.
+	
+	* tobacco-sqlconvert.pl,
+	OVIMTobacco.cpp,
+	PredictorSingleton.cpp,
+	Makefile: Updated to OpenVanilla repository 2005-10-31.
+
 2005-08-12  Jim Huang  <jserv@kaffe.org>
 
 	* include/OVLibrary.h,
