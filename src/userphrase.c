@@ -62,6 +62,7 @@ int LoadOriginalFreq( const uint16 phoneSeq[], const char wordSeq[], int len )
 		} while ( GetPhraseNext( phrase ) );
 	}
 
+	free( phrase );
 	return FREQ_INIT_VALUE;
 }
 

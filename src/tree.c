@@ -295,8 +295,6 @@ int TreeFindPhrase( int begin, int end, const uint16 *phoneSeq )
 			return -1;
 		else
 		{
-			if( tree_p == 115190 )
-				tree_p = tree_p;
 			tree_p = child;
 		}
 	}
@@ -315,6 +313,28 @@ void AddInterval(
 	ptd->nInterval++;
 }
 
+void _release_Phrase(int mode, Phrase *pUser, Phrase *pDict) 
+{
+    /* Item who insert to interval array:
+       mode=0:non of item used, 
+       mode=1:pUser, 
+       mode=2:pDict,
+       we must free the one not used */
+    switch ( mode )
+    {
+    case    0:  
+        if ( pDict!=NULL ) free(pDict); 
+        if ( pUser!=NULL ) free(pUser); 
+        break;
+    case    1:  
+        if ( pDict!=NULL ) free(pDict); 
+        break;
+    case    2:
+        if ( pUser!=NULL )free(pUser); 
+        break;
+    }
+}
+
 void FindInterval(
 		uint16 *phoneSeq, int nPhoneSeq, 
 		char selectStr[][ MAX_PHONE_SEQ_LEN * 2 + 1 ], 
@@ -323,7 +343,7 @@ void FindInterval(
 {
 	int end, begin, pho_id;
 	Phrase *p_phrase, *puserphrase, *pdictphrase;
-	uint16 new_phoneSeq[ MAX_PHONE_SEQ_LEN ];
+	uint16 i_used_phrase, new_phoneSeq[ MAX_PHONE_SEQ_LEN ];
 
 	for ( begin = 0; begin < nPhoneSeq; begin++ ) {
 		for ( end = begin; end < nPhoneSeq; end++ ) {
@@ -337,6 +357,9 @@ void FindInterval(
 				sizeof( uint16 ) * ( end - begin + 1 ) );
 			new_phoneSeq[ end - begin + 1 ] = 0;
 			puserphrase = pdictphrase = NULL;
+            /* Item who insert to interval array:
+               0:non of item, 1:puserphrase, 2:pdictphrase */
+            i_used_phrase = 0; 
 
 			/* check user phrase */
 			if ( UserGetPhraseFirst( new_phoneSeq ) &&
@@ -360,7 +383,7 @@ void FindInterval(
 			 * but when the phrase is the same, the user phrase overrides 
 			 * static dict
 			 */
-			if ( puserphrase != NULL && pdictphrase == NULL ) 
+            if ( puserphrase != NULL && pdictphrase == NULL ) {
 				AddInterval( 
 					ptd, 
 					begin, 
@@ -368,7 +391,9 @@ void FindInterval(
 					-1, 
 					puserphrase, 
 					IS_USER_PHRASE );
-			else if ( puserphrase == NULL && pdictphrase != NULL )
+                i_used_phrase = 1; 
+            }
+            else if ( puserphrase == NULL && pdictphrase != NULL ) {
 				AddInterval( 
 					ptd, 
 					begin, 
@@ -376,12 +401,14 @@ void FindInterval(
 					pho_id, 
 					pdictphrase, 
 					IS_DICT_PHRASE );
+                i_used_phrase = 2; 
+            }
 			else if( puserphrase != NULL && pdictphrase != NULL ) {
 				/* the same phrase, userphrase overrides */
 				if ( ! memcmp( 
 					puserphrase->phrase, 
 					pdictphrase, 
-					( end - begin + 1 ) * 2 * sizeof( char ) ) ) 
+                    ( end - begin + 1 ) * 2 * sizeof( char ) ) ) {
 					AddInterval( 
 						ptd, 
 						begin, 
@@ -389,8 +416,10 @@ void FindInterval(
 						-1, 
 						puserphrase, 
 						IS_USER_PHRASE );
+                    i_used_phrase = 1; 
+                }
 				else {
-					if ( puserphrase->freq > pdictphrase->freq ) 
+                    if ( puserphrase->freq > pdictphrase->freq ) {
 						AddInterval( 
 							ptd, 
 							begin, 
@@ -398,7 +427,9 @@ void FindInterval(
 							-1, 
 							puserphrase, 
 							IS_USER_PHRASE );
-					else
+                        i_used_phrase = 1; 
+                    }
+                    else {
 						AddInterval( 
 							ptd, 
 							begin, 
@@ -406,8 +437,12 @@ void FindInterval(
 							pho_id, 
 							pdictphrase, 
 							IS_DICT_PHRASE );
+                        i_used_phrase = 2; 
+                    }
 				}
 			}
+
+            _release_Phrase(i_used_phrase, puserphrase, pdictphrase);
 		}
 	}
 }
@@ -508,10 +543,18 @@ void Discard1( TreeDataType *ptd )
 	}
 	/* discard all the intervals whose failflag[a] = 1 */
 	nInterval2 = 0;
-	for ( a = 0; a < ptd->nInterval; a++ )
-		if ( ! failflag[ a ] )
+    for ( a = 0; a < ptd->nInterval; a++ ) {
+        if ( ! failflag[ a ] ) {
 			ptd->interval[ nInterval2++ ] = ptd->interval[ a ];
+        }
+        else {
+            if ( ptd->interval[ a ].p_phr!=NULL ) {
+                free( ptd->interval[ a ].p_phr );
+            }
+        }
+    }
 	ptd->nInterval = nInterval2;
+
 }
 
 void Discard2( TreeDataType *ptd )
@@ -760,6 +803,7 @@ void SaveDispInterval( PhrasingOutput *ppo, TreeDataType *ptd )
 void CleanUpMem( TreeDataType *ptd )
 {
 	int i;
+    RecordNode  *pNode;
 
 	for ( i = 0; i < ptd->nInterval; i++ ) {
 		if ( ptd->interval[ i ].p_phr ) {
@@ -767,6 +811,13 @@ void CleanUpMem( TreeDataType *ptd )
 			ptd->interval[ i ].p_phr = NULL;
 		}
 	}
+
+    while ( ptd->phList!=NULL ) {
+        pNode = ptd->phList;
+        ptd->phList = pNode->next;
+        free(pNode->arrIndex);
+        free(pNode);
+    };
 }
 
 void CountMatchCnnct( TreeDataType *ptd, int *bUserArrCnnct, int nPhoneSeq )
