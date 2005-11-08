@@ -120,7 +120,7 @@ HASH_ITEM *HashInsert( UserPhraseData *pData )
 	return pItem;
 }
 
-static void HashItem2String( char *str, HASH_ITEM *pItem )
+void HashItem2String( char *str, HASH_ITEM *pItem )
 {
 	int i, len;
 	char buf[ FIELD_SIZE ];

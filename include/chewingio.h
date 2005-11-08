@@ -113,5 +113,9 @@ int GetShapeMode( void *iccf );
  */
 int KBStr2Num( char str[] );
 
+#ifdef  WIN32
+uint16* GetLastPhoneSeq();
+#endif
+
 #endif
 

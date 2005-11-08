@@ -37,6 +37,10 @@
 FILE *fp_g;
 #endif
 
+#ifdef  WIN32
+uint16 g_lastPhoneSeq[MAX_PHONE_SEQ_LEN] = {0};
+#endif
+
 void (*TerminateServices[ TerminateServicesNUM ])() = {
 	NULL
 };
@@ -433,6 +437,10 @@ int OnKeyEnter( void *iccf, ChewingOutput *pgo )
 	} else {
 		keystrokeRtn = KEYSTROKE_COMMIT;
 		WriteChiSymbolToBuf( pgo->commitStr, nCommitStr, pgdata );
+#ifdef WIN32
+    memcpy(g_lastPhoneSeq, pgdata->phoneSeq, sizeof(uint16)*pgdata->nPhoneSeq);
+    g_lastPhoneSeq[pgdata->nPhoneSeq] = 0;
+#endif
 		AutoLearnPhrase( pgdata );
 		CleanAllBuf( pgdata );  
 		CallPhrasing( pgdata );
@@ -1116,3 +1124,10 @@ int OnKeyNumlock( void *iccf, int key, ChewingOutput *pgo )
 /* c-indentation-style: linux */
 /* indent-tabs-mode: t */
 /* End: */
+
+#ifdef WIN32
+uint16* GetLastPhoneSeq()
+{
+    return  g_lastPhoneSeq;
+}
+#endif
