@@ -171,6 +171,31 @@ void HashModify( HASH_ITEM *pItem )
 	fclose( outfile );
 }
 
+#ifdef  WIN32
+#include <windows.h>
+static int _isDbcsString(char *str)
+{
+	char *pNextChar, *pCurChar;
+
+	pCurChar = str;
+	while ( *pCurChar!=NULL )
+	{
+		pNextChar = CharNext(pCurChar);
+		if ( (int)(pNextChar-pCurChar)!=2 )
+		{
+			return	0;
+		}
+		pCurChar = pNextChar;
+	};
+
+	return	1;
+}
+#endif
+
+/**
+ * @return 1, 0 or -1
+ * retval -1 For win32 only, ignore bad data item
+ */
 int ReadHashItem( FILE *infile, HASH_ITEM *pItem, int item_index )
 {
 	int len, i, word_len;
@@ -179,6 +204,15 @@ int ReadHashItem( FILE *infile, HASH_ITEM *pItem, int item_index )
 	/* read wordSeq */
 	if ( fscanf( infile, "%s", wordbuf ) != 1 )
 		return 0;
+
+#ifdef  WIN32
+    if ( _isDbcsString(wordbuf)==0 )
+    {
+        fseek(infile, FIELD_SIZE-strlen(wordbuf)-1, SEEK_CUR);
+        return  -1;
+    }
+#endif
+
 	word_len = strlen( wordbuf );
 	pItem->data.wordSeq = ALC( char, word_len + 1 );
 	strcpy( pItem->data.wordSeq, wordbuf );
@@ -209,7 +243,7 @@ int ReadHash( char *path )
 {
 	FILE *infile;
 	HASH_ITEM item, *pItem;
-	int item_index, hashvalue;
+	int item_index, hashvalue, iret;
 
 	/* make sure of write permission */
 	if ( access( path, W_OK ) != 0) {
@@ -258,8 +292,17 @@ int ReadHash( char *path )
 	else {
 		fscanf( infile, "%d", &chewing_lifetime );
 		item_index = 0;
-		while ( ReadHashItem( infile, &item, ++item_index ) ) {
-			hashvalue = HashFunc( item.data.phoneSeq );
+        while ( 1 ) {
+            iret = ReadHashItem( infile, &item, ++item_index );
+
+            if ( iret==-1 ) {
+                --item_index;
+                continue;
+            }
+            else if ( iret==0 )
+                break;
+
+            hashvalue = HashFunc( item.data.phoneSeq );
 			pItem = ALC( HASH_ITEM, 1 );
 			memcpy( pItem, &item, sizeof( HASH_ITEM ) );
 			pItem->next = hashtable[ hashvalue ];
