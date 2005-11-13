@@ -26,6 +26,10 @@
 
 #ifdef WIN32
 	#include <windows.h>
+#else
+	#include <sys/types.h>
+	#include <sys/stat.h>
+	#include <unistd.h>
 #endif
 
 #ifdef	USE_BINARY_DAT
@@ -76,47 +80,75 @@ static void TerminateChar()
 
 int InitChar( const char *prefix )
 {
-	FILE *indexfile;
+#ifndef	WIN32
+	const char* DIRPATH_SEP_FILENAME = "%s/%s";
+#else
+	const char* DIRPATH_SEP_FILENAME = "%s\\%s";
+#endif
+
 	char filename[ 100 ];
 	int i;
+
+#ifndef	USE_BINARY_DAT
+	FILE* indexfile;
+#else	/* Use binary data format */
 	long file_size;
 
-#ifndef WIN32
-	sprintf( filename, "%s/%s", prefix, CHAR_FILE );
-#else
-	HANDLE hIndexFile;
-	DWORD read_len;
-	sprintf( filename, "%s\\%s", prefix, CHAR_FILE );
-#endif
+	#ifndef WIN32
+		int indexfile;
+		struct stat file_stat;
+	#else
+		HANDLE hIndexFile;
+		DWORD read_len;
+	#endif
+#endif	/* USE_BINARY_DAT */
 
+	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, CHAR_FILE );
 	dictfile = fopen( filename, "r" );
 
-#ifndef WIN32
-	sprintf( filename, "%s/%s", prefix, CHAR_INDEX_FILE );
-#else
-	sprintf( filename, "%s\\%s", prefix, CHAR_INDEX_FILE );
-#endif
+	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, CHAR_INDEX_FILE );
 
 #ifdef	USE_BINARY_DAT
-	hIndexFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
-	if ( ! dictfile || hIndexFile == INVALID_HANDLE_VALUE )
-		return 0;
-	file_size = GetFileSize( hIndexFile, NULL);
-	phone_num = file_size / (sizeof(int) + sizeof(uint16));
-	phone_data_buf = malloc( file_size );
+	#ifdef WIN32	/* Win32 */
+		hIndexFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+		if ( ! dictfile || hIndexFile == INVALID_HANDLE_VALUE )
+			return 0;
+		file_size = GetFileSize( hIndexFile, NULL);
+		phone_num = file_size / (sizeof(int) + sizeof(uint16));
+		phone_data_buf = malloc( file_size );
 
-	if( !phone_data_buf || 
-		! ReadFile( hIndexFile, phone_data_buf, file_size, &read_len, NULL) )
-	{
+		if( !phone_data_buf || 
+			! ReadFile( hIndexFile, phone_data_buf, file_size, &read_len, NULL) )
+		{
+			CloseHandle(hIndexFile);
+			return 0;
+		}
+
+		begin = ((int*)phone_data_buf);
+		arrPhone = (uint16*)(begin + phone_num);
+
 		CloseHandle(hIndexFile);
-		return 0;
-	}
+	#else	/* UNIX	*/
+		indexfile = open( filename, O_RDONLY );
+		if ( ! dictfile || -1 == indexfile )
+			return 0;
+		fstat( indexfile, &file_stat );
+		file_size = (long)file_stat.st_size;
 
-	begin = ((int*)phone_data_buf);
-	arrPhone = (uint16*)(begin + phone_num);
+		phone_num = file_size / (sizeof(int) + sizeof(uint16));
+		phone_data_buf = malloc( file_size );
 
-	CloseHandle(hIndexFile);
-#else
+		if( !phone_data_buf )	{
+			read( indexFile, phone_data_buf, file_size )
+			return 0;
+		}
+
+		begin = ((int*)phone_data_buf);
+		arrPhone = (uint16*)(begin + phone_num);
+
+		close(indexFile);
+	#endif	/* WIN32 */
+#else	/*	Use plain text data file	*/
 	indexfile = fopen( filename, "r" );
 	if ( ! dictfile || ! indexfile )
 		return 0;

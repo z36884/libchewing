@@ -21,13 +21,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef WIN32
+	#include <windows.h>
+#else
+	#include <sys/types.h>
+	#include <sys/stat.h>
+	#include <unistd.h>
+#endif
+
 #include "userphrase.h"
 #include "global.h"
 #include "dict.h"
 #include "char.h"
 #include "private.h"
 
-#include <windows.h>
 
 #define INTERVAL_SIZE ( ( MAX_PHONE_SEQ_LEN + 1 ) * MAX_PHONE_SEQ_LEN / 2 )
 
@@ -48,7 +55,7 @@ typedef struct {
 
 #ifdef	USE_BINARY_DAT
 	extern TreeType *tree;
-	DWORD tree_size = 0;
+	size_t tree_size = 0;
 #else
 	extern TreeType tree[ TREE_SIZE ];
 #endif
@@ -94,31 +101,56 @@ static void TerminateTree()
 
 void ReadTree( const char *prefix )
 {
-	int i;
-	FILE *infile;
-	char filename[ 100 ];
-
-#ifndef WIN32
-	sprintf( filename, "%s/%s", prefix, PHONE_TREE_FILE );
+#ifndef	WIN32
+	const char* DIRPATH_SEP_FILENAME = "%s/%s";
 #else
+	const char* DIRPATH_SEP_FILENAME = "%s\\%s";
 	HANDLE hInFile;
 	DWORD read_len;
 	DWORD file_size;
-	sprintf( filename, "%s\\%s", prefix, PHONE_TREE_FILE );
 #endif
+
+	int i;
+	char filename[ 100 ];
+#ifndef	USE_BINARY_DAT
+	FILE *infile;
+#else
+	#ifndef WIN32
+		int infile;
+		struct stat file_stat;
+	#endif
+#endif
+
+	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, PHONE_TREE_FILE );
+
 #ifdef	USE_BINARY_DAT
-	hInFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+	#ifdef WIN32	/* Win32 */
+		hInFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
 
-	if( hInFile == INVALID_HANDLE_VALUE  )
-		return;
+		if( hInFile == INVALID_HANDLE_VALUE  )
+			return;
 
-	tree_size = file_size = GetFileSize( hInFile, NULL);
-	if(	tree = malloc(file_size) )
-		ReadFile( hInFile, tree, file_size, &read_len, NULL);
+		tree_size = file_size = GetFileSize( hInFile, NULL);
+		if(	tree = malloc(file_size) )
+			ReadFile( hInFile, tree, file_size, &read_len, NULL);
 
-	CloseHandle(hInFile);
+		CloseHandle(hInFile);
+	#else
+		infile = open( filename, O_RDONLY );
 
-	addTerminateService( TerminateTree );
+		if( infile == -1  )
+			return;
+
+		fstat( infile, &file_stat );
+
+		tree_size = file_size = (long)file_stat.st_size;
+		if(	tree = malloc(file_size) )
+			read( infile, tree, file_size );
+
+		close( infile );
+	#endif /* WIN32 */
+
+	addTerminateService( TerminateTree );	/* Free allocated memory */
 #else
 	infile = fopen( filename, "r" );
 	assert( infile );
@@ -132,6 +164,7 @@ void ReadTree( const char *prefix )
 	}
 	fclose( infile );
 #endif
+
 }
 
 int CheckBreakpoint( int from, int to, int bArrBrkpt[] )

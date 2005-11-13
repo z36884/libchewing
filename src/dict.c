@@ -16,7 +16,13 @@
 #include <assert.h>
 #include <string.h>
 
-#include <windows.h>
+#ifdef WIN32
+	#include <windows.h>
+#else
+	#include <sys/types.h>
+	#include <sys/stat.h>
+	#include <unistd.h>
+#endif
 
 #include "dict.h"
 
@@ -58,37 +64,56 @@ static void TerminateDict()
 
 int InitDict( const char *prefix )
 {
-	FILE *indexfile;
-	int i;
-	char filename[ 100 ];
-
-#ifndef WIN32
-	sprintf( filename, "%s/%s", prefix, DICT_FILE );
+#ifndef	WIN32
+	const char* DIRPATH_SEP_FILENAME = "%s/%s";
 #else
+	const char* DIRPATH_SEP_FILENAME = "%s\\%s";
 	HANDLE hInFile;
 	DWORD read_len;
 	DWORD file_size;
-	sprintf( filename, "%s\\%s", prefix, DICT_FILE );
 #endif
+
+#ifndef	USE_BINARY_DAT
+	FILE* indexfile;
+#else	/* Use binary data format */
+	#ifndef WIN32
+		int indexfile;
+		struct stat file_stat;
+	#endif
+#endif	/* USE_BINARY_DAT */
+
+	int i;
+	char filename[ 100 ];
+
+	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, DICT_FILE );
 	dictfile = fopen( filename, "r" );
 
-	#ifndef WIN32
-		sprintf( filename, "%s/%s", prefix, PH_INDEX_FILE );
-	#else
-		sprintf( filename, "%s\\%s", prefix, PH_INDEX_FILE );
-	#endif
+	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, PH_INDEX_FILE );
 
 #ifdef	USE_BINARY_DAT
-	hInFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+	#ifdef WIN32	/* Win32 */
+		hInFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
 
-	if( hInFile == INVALID_HANDLE_VALUE  )
-		return 0;
+		if( hInFile == INVALID_HANDLE_VALUE  )
+			return 0;
 
-	file_size = GetFileSize( hInFile, NULL);
-	if(	begin = (int*)malloc(file_size + sizeof(int)) )
-		ReadFile( hInFile, begin, file_size, &read_len, NULL);
+		file_size = GetFileSize( hInFile, NULL);
+		if(	begin = (int*)malloc(file_size + sizeof(int)) )
+			ReadFile( hInFile, begin, file_size, &read_len, NULL);
 
-	CloseHandle(hInFile);
+		CloseHandle(hInFile);
+	#else
+		indexfile = open( filename, O_RDONLY);
+
+		if( indexfile == -1 )
+			return 0;
+		fstat( indexfile, &file_stat );
+
+		if(	begin = (int*)malloc( (size_t)file_stat.st_size + sizeof(int)) )
+			read( indexfile, begin, file_size );
+
+		close( indexfile );
+	#endif /* WIN32 */
 #else
 	indexfile = fopen( filename, "r" );
 	assert( dictfile && indexfile );
