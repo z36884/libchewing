@@ -702,7 +702,9 @@ int OnKeyTab( void *iccf, ChewingOutput *pgo )
 
 	if ( ! pgdata->bSelect ) {
 		if ( ChewingIsChiAt( pgdata->chiSymbolCursor - 1, pgdata ) ) {
-			if ( IsPreferIntervalConnted( pgdata->cursor, pgdata) ) {
+			if ( IsPreferIntervalConnted( pgdata->cursor, pgdata) ||
+                 /* allow insert a break point behind the end of composition */
+                 pgdata->cursor==pgdata->chiSymbolCursor ) {
 				pgdata->bUserArrBrkpt[ pgdata->cursor ] = 1;
 				pgdata->bUserArrCnnct[ pgdata->cursor ] = 0;
 			}
