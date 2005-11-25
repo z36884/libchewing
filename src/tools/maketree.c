@@ -224,6 +224,7 @@ void BFS2()
 	}
 	fclose( output );
 }
+
 #ifdef	_DAT2BIN
 int maketree()
 #else

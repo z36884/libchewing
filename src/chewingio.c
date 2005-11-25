@@ -14,7 +14,7 @@
 
 /**
  * @file chewingio.c
- * @brief Implement some routines for chewing
+ * @brief Implement basic I/O routines for Chewing manipulation.
  */
 
 #include <string.h>
@@ -23,6 +23,7 @@
 #include <windows.h>
 #endif
 
+#include "chewing-utf8-util.h"
 #include "chewingio.h"
 #include "global.h"
 #include "zuin.h"
@@ -89,9 +90,11 @@ int addTerminateService( void (*callback)() )
 {       
 	if ( callback ) {
 		int i;
-		for( i = 0; i < countTerminateService; ++i )
-			if( TerminateServices[i] == callback )
+		for ( i = 0; i < countTerminateService; ++i ) {
+			/* Avoid redundant function pointer */
+			if ( TerminateServices[ i ] == callback )
 				return 1;
+		}
 		TerminateServices[ countTerminateService++ ] = callback;
 		return 0;
 	}
@@ -144,10 +147,6 @@ int InitChewing( void *iccf, ChewingConf *cf )
 	pgdata->nSelect = 0;
 	pgdata->PointStart = -1;
 	pgdata->PointEnd = 0;
-	/* XXX: make options for callee to decide if use atexit or not. */
-#ifndef	DISABLE_ATEXIT
-	atexit( TerminateChewing );
-#endif
 	return 0;
 }
 
@@ -909,10 +908,12 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 				bQuickCommit = 1;
 			}
 
-			if( pgdata->bFullShape )
+			if ( pgdata->bFullShape ) {
 				rtn = FullShapeSymbolInput( key, pgdata );
-			else
+			}
+			else {
 				rtn = SymbolInput( key, pgdata );
+			}
 
 			if ( rtn == SYMBOL_KEY_ERROR ) {
 				keystrokeRtn = KEYSTROKE_IGNORE;
@@ -950,7 +951,7 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 	int newPhraseLen;
 	int i;
 	uint16 addPhoneSeq[ MAX_PHONE_SEQ_LEN ];
-	char addWordSeq[ MAX_PHONE_SEQ_LEN * 2 + 1 ];
+	char addWordSeq[ MAX_PHONE_SEQ_LEN * 3 + 1 ];
 	int phraseState;
 
 	CheckAndResetRange( pgdata );
@@ -985,11 +986,12 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 					&pgdata->phoneSeq[ pgdata->cursor ],
 					sizeof( uint16 ) * newPhraseLen );
 				addPhoneSeq[ newPhraseLen ] = 0;
-				memcpy(
-					addWordSeq,
-					&pgdata->phrOut.chiBuf[ pgdata->cursor * 2 ],
-					sizeof( char ) * 2 * newPhraseLen );
-				addWordSeq[ newPhraseLen * 2 ] = '\0';
+				ueStrNCpy(
+						addWordSeq,
+						ueStrSeek( &pgdata->phrOut.chiBuf,
+							pgdata->cursor ),
+						newPhraseLen, 1);
+
 
 				phraseState = UserUpdatePhrase( addPhoneSeq, addWordSeq );
 				SetUpdatePhraseMsg( 
@@ -1018,11 +1020,11 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 					&pgdata->phoneSeq[ pgdata->cursor - newPhraseLen ],
 					sizeof( uint16 ) * newPhraseLen );
 				addPhoneSeq[ newPhraseLen ] = 0;
-				memcpy(
-					addWordSeq,
-					&pgdata->phrOut.chiBuf[ ( pgdata->cursor - newPhraseLen ) * 2 ],
-					sizeof( char ) * 2 * newPhraseLen );
-				addWordSeq[ newPhraseLen * 2 ] = '\0';
+				ueStrNCpy(
+						addWordSeq,
+						ueStrSeek( &pgdata->phrOut.chiBuf,
+							pgdata->cursor - newPhraseLen ),
+						newPhraseLen, 1);
 
 				phraseState = UserUpdatePhrase( addPhoneSeq, addWordSeq );
 				SetUpdatePhraseMsg( 

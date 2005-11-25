@@ -83,7 +83,7 @@ int IsET26PhoEndKey( int pho_inx[], int key )
 
 int IsDefPhoEndKey( int key, int kbtype )
 {
-	if ( Key2PhoneInx( key, 3, kbtype, 1 )  )
+	if ( PhoneInxFromKey( key, 3, kbtype, 1 )  )
 		return 1;
 	
 	if ( key == ' ' )
@@ -111,7 +111,7 @@ int EndKeyProcess( ZuinData *pZuin, int key, int searchTimes )
 		return (key == ' ') ? ZUIN_KEY_ERROR : ZUIN_NO_WORD;
 	}
 
-	pho_inx = Key2PhoneInx( key, 3, pZuin->kbtype, searchTimes );
+	pho_inx = PhoneInxFromKey( key, 3, pZuin->kbtype, searchTimes );
 	if( pZuin->pho_inx[ 3 ] == 0 )
 		pZuin->pho_inx[ 3 ] = pho_inx;
 	else if( key != ' ' )
@@ -120,7 +120,7 @@ int EndKeyProcess( ZuinData *pZuin, int key, int searchTimes )
 		return ZUIN_NO_WORD;
 	}
 
-	u16Pho = PhoneInx2Uint( pZuin->pho_inx );
+	u16Pho = UintFromPhoneInx( pZuin->pho_inx );
 	if ( GetCharFirst( &tempword, u16Pho ) == 0 ) {
 		ZuinRemoveAll( pZuin );
 		return ZUIN_NO_WORD;
@@ -147,7 +147,7 @@ int DefPhoInput( ZuinData *pZuin, int key )
 		
 	/* decide if the key is a phone */
 	for ( type = 0; type <= 3; type++ ) {
-		inx = Key2PhoneInx( key, type, pZuin->kbtype, 1 );
+		inx = PhoneInxFromKey( key, type, pZuin->kbtype, 1 );
 		if ( inx )
 			break;
 	}
@@ -225,7 +225,7 @@ int HsuPhoInput( ZuinData *pZuin, int key )
 	else {
 		/* decide if the key is a phone */
 		for ( type = 0, searchTimes = 1; type < 3; type++ ) {
-			inx = Key2PhoneInx( key, type, pZuin->kbtype, searchTimes );
+			inx = PhoneInxFromKey( key, type, pZuin->kbtype, searchTimes );
 			if ( ! inx )
 				continue; /* if inx == 0, next type */
 			else if ( type == 0 ) {
@@ -330,7 +330,7 @@ int ET26PhoInput( ZuinData *pZuin, int key )
 	else {
 		/* decide if the key is a phone */
 		for ( type = 0, searchTimes = 1; type < 3; type++ ) {
-			inx = Key2PhoneInx( key, type, pZuin->kbtype, searchTimes );
+			inx = PhoneInxFromKey( key, type, pZuin->kbtype, searchTimes );
 			if ( ! inx ) 
 				continue; /* if inx == 0, next type */
 			else if ( type == 0 ) {
