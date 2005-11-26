@@ -24,7 +24,14 @@ extern "C" {
 
 #define FIELD_SIZE (125)
 #define N_HASH_BIT (14)
+#ifdef	WIN32
+  /* Change file name to uhash.dat to make the newer 
+     UTF8-encoded file distinguishable from the older one */
+#define HASH_FILE  "uhash.dat"
+#else
 #define HASH_FILE  "hash.dat"
+#endif	/* WIN32 */
+
 #define HASH_TABLE_SIZE (1<<N_HASH_BIT)
 
 #ifdef __MacOSX__
