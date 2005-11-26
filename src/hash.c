@@ -172,30 +172,21 @@ void HashModify( HASH_ITEM *pItem )
 	fclose( outfile );
 }
 
-#ifdef  WIN32
-#include <windows.h>
-static int _isDbcsString(char *str)
+static int isChineseString(char *str)
 {
-	char *pNextChar, *pCurChar;
-
-	pCurChar = str;
-	while ( *pCurChar!=NULL )
-	{
-		pNextChar = CharNext(pCurChar);
-		if ( (int)(pNextChar-pCurChar)!=2 )
-		{
+	while ( *str != NULL )	{
+		int len = ueBytesFromChar( (unsigned char)*str );
+		if ( len <= 1 )	{
 			return	0;
 		}
-		pCurChar = pNextChar;
+		str += len;
 	};
-
-	return	1;
+	return 1;
 }
-#endif
 
 /**
  * @return 1, 0 or -1
- * retval -1 For win32 only, ignore bad data item
+ * retval -1 Ignore bad data item
  */
 int ReadHashItem( FILE *infile, HASH_ITEM *pItem, int item_index )
 {
@@ -206,13 +197,12 @@ int ReadHashItem( FILE *infile, HASH_ITEM *pItem, int item_index )
 	if ( fscanf( infile, "%s", wordbuf ) != 1 )
 		return 0;
 
-#ifdef  WIN32
-    if ( _isDbcsString(wordbuf)==0 )
+	/* Invalid UTF-8 Chinese characters found */
+    if ( ! isChineseString( wordbuf ) )
     {
         fseek(infile, FIELD_SIZE-strlen(wordbuf)-1, SEEK_CUR);
         return  -1;
     }
-#endif
 
 	word_len = strlen( wordbuf );
 	pItem->data.wordSeq = ALC( char, word_len + 1 );
