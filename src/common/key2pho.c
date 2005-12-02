@@ -55,7 +55,7 @@ static char *key_str[ MAX_KBTYPE ] = {
 uint16 UintFromPhone( const char *zhuin )
 {
     char *iter, *pos;
-    char buf[4];
+    char buf[7];
     int len, result = 0;
     int i;
 
