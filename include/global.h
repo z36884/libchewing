@@ -35,6 +35,7 @@
 #define MAX_SELKEY 10
 #define TREE_SIZE (153341)
 #define WCH_SIZE 4
+#define MAX_UTF8_SIZE   6
 #define ZUIN_SIZE 4
 #define PINYING_SIZE 10
 #define MAX_PHRASE_LEN 10
@@ -76,7 +77,7 @@ typedef struct {
 } IntervalType;
 
 typedef struct {
-	char chiBuf[ MAX_PHONE_SEQ_LEN * 3 + 1 ];
+	char chiBuf[ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ];
 	IntervalType dispInterval[ MAX_INTERVAL ];
 	int nDispInterval;
 } PhrasingOutput;
