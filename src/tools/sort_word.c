@@ -80,9 +80,9 @@ void Output()
 		
 #ifdef WIN32
 	/*filter*/
-	wchar_t wchbuf[3];
+	wchar_t wchbuf[5];
 	MultiByteToWideChar( CP_UTF8, MB_ERR_INVALID_CHARS, word_data[i].word, -1, wchbuf, sizeof(wchbuf)/sizeof(wchar_t) );
-	if( wcslen( wchbuf ) != 1 ) {
+	if( wcslen( wchbuf ) != 1 )	{
 		continue;
 	}
 #endif
