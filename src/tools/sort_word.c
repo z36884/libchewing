@@ -28,6 +28,10 @@
 #define MAX_NUMBER	(12000)
 #define MAX_BUF_LEN	(4096)
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 typedef struct {
 	unsigned int num[2];
 	char word[ 8 ];
@@ -48,6 +52,7 @@ int DoWord( char *buf )
 
 	memset( phoneInx, 0, sizeof( phoneInx ) );
 	sscanf( buf, "%s %s", keyBuf, word_data[ nWord ].word );
+	
 	if ( strlen( keyBuf ) > ZUIN_SIZE )
 		return DO_WORD_ERROR;
 
@@ -72,6 +77,15 @@ void Output()
 
 	previous = 0 ;
 	for ( i = 0; i < nWord; i++ ) {
+		
+#ifdef WIN32
+	/*filter*/
+	wchar_t wchbuf[3];
+	MultiByteToWideChar( CP_UTF8, MB_ERR_INVALID_CHARS, word_data[i].word, -1, wchbuf, sizeof(wchbuf)/sizeof(wchar_t) );
+	if( wcslen( wchbuf ) != 1 ) {
+		continue;
+	}
+#endif
 		if ( word_data[ i ].num[0] != previous ) {
 			previous = word_data[ i ].num[0];
 			fprintf( indexfile, "%hu %ld\n", (uint16)previous, ftell( datafile ) );
