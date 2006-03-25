@@ -51,7 +51,8 @@ typedef struct {
 	char graph[ MAX_PHONE_SEQ_LEN + 1 ][ MAX_PHONE_SEQ_LEN + 1 ];
 	PhraseIntervalType interval[ MAX_INTERVAL ];
 	int nInterval;
-	RecordNode *phList;  
+	RecordNode *phList;
+	int nPhListLen;
 } TreeDataType;
 
 #ifdef	USE_BINARY_DAT
@@ -738,6 +739,7 @@ void SortListByFreq( TreeDataType *ptd )
 		p; 
 		listLen++, p = p->next )
 		;
+	ptd->nPhListLen = listLen;
 
 	arr = ALC( RecordNode *, listLen );
 	assert( arr );
@@ -754,7 +756,7 @@ void SortListByFreq( TreeDataType *ptd )
 	}
 
 	qsort( arr, listLen, sizeof( RecordNode * ), (CompFuncType) CompRecord );
-
+	
 	ptd->phList = arr[ 0 ];
 	for ( i = 1; i < listLen; i++ ) {
 		arr[ i - 1 ]->next = arr[ i ];
@@ -923,6 +925,17 @@ void ShowList( TreeDataType *ptd )
 
 #endif
 
+RecordNode* NextCut( TreeDataType *tdt, PhrasingOutput *ppo )
+{
+	int i;
+	if( ppo->nNumCut == tdt->nPhListLen ) 
+		ppo->nNumCut = 0;
+	for( i = 0; i < ppo->nNumCut; i++ )
+		tdt->phList = tdt->phList->next;
+	return tdt->phList;
+
+}
+
 int Phrasing(
 		PhrasingOutput *ppo, uint16 phoneSeq[], int nPhoneSeq, 
 		char selectStr[][ MAX_PHONE_SEQ_LEN * 3 + 1 ], 
@@ -942,6 +955,7 @@ int Phrasing(
 	SaveList( &treeData );
 	CountMatchCnnct( &treeData, bUserArrCnnct, nPhoneSeq );
 	SortListByFreq( &treeData );
+	NextCut( &treeData, ppo );
 
 #ifdef ENABLE_DEBUG
 	ShowList( &treeData );

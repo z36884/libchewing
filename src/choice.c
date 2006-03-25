@@ -102,6 +102,7 @@ void SetAvailInfo(
 				/* save it! */
 				pai->avail[ pai->nAvail ].len = diff + 1;
 				pai->avail[ pai->nAvail ].id = -1;
+				pai->nAvail++;
 			} else {
 				pai->avail[ pai->nAvail ].len = 0;
 				pai->avail[ pai->nAvail ].id = -1;

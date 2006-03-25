@@ -80,6 +80,7 @@ typedef struct {
 	char chiBuf[ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ];
 	IntervalType dispInterval[ MAX_INTERVAL ];
 	int nDispInterval;
+	int nNumCut;
 } PhrasingOutput;
 
 typedef struct {
@@ -137,6 +138,7 @@ typedef struct {
 	int selKey[ MAX_SELKEY ];
 	int bAddPhraseForward;
 	int bSpaceAsSelection;
+	int bEscCleanAllBuf;
 	/** @brief
             HSU_SELKEY_TYPE1 = asdfjkl789,
             HSU_SELKEY_TYPE2 = asdfzxcv89.
@@ -173,7 +175,6 @@ typedef struct {
 	int bSymbolArrBrkpt[ MAX_PHONE_SEQ_LEN + 1 ];
 	/* "bArrBrkpt[10]=True" means "it breaks between 9 and 10" */
 	int bChiSym, bSelect, bCaseChange, bFirstKey, bFullShape, bAutoShiftCur;
-
 } ChewingData;
 
 typedef struct {

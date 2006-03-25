@@ -147,6 +147,7 @@ int InitChewing( void *iccf, ChewingConf *cf )
 	pgdata->nSelect = 0;
 	pgdata->PointStart = -1;
 	pgdata->PointEnd = 0;
+	pgdata->phrOut.nNumCut = 0;
 	return 0;
 }
 
@@ -187,12 +188,15 @@ int SetConfig( void *iccf, ConfigData *pcd )
 		sizeof( pcd->selKey[ 0 ] ) * MAX_SELKEY );
 	pgdata->config.bAddPhraseForward = pcd->bAddPhraseForward;
 	pgdata->config.bSpaceAsSelection = pcd->bSpaceAsSelection;
+	pgdata->config.bEscCleanAllBuf = pcd->bEscCleanAllBuf;
 	
 	/* Failback to default value */
 	if ( (pgdata->config.bAddPhraseForward != 0) && (pgdata->config.bAddPhraseForward != 1) )
 		pgdata->config.bAddPhraseForward = 0;
 	if ( (pgdata->config.bSpaceAsSelection != 0) && (pgdata->config.bSpaceAsSelection != 1) )
 		pgdata->config.bSpaceAsSelection = 1;
+	if( (pgdata->config.bEscCleanAllBuf != 0) && (pgdata->config.bEscCleanAllBuf != 1) )
+		pgdata->config.bEscCleanAllBuf = 0;
 	return 0;
 }
 
@@ -395,6 +399,8 @@ int OnKeyEsc( void *iccf, ChewingOutput *pgo )
 		ChoiceEndChoice( pgdata );
 	} else if ( ZuinIsEntering( &( pgdata->zuinData ) ) ) {
 		ZuinRemoveAll( &( pgdata->zuinData ) );
+	} else if( pgdata->config.bEscCleanAllBuf ) {
+		CleanAllBuf( pgdata );
 	}
 
 	MakeOutputWithRtn( pgo, pgdata, keystrokeRtn );
@@ -544,14 +550,20 @@ int OnKeyDown( void *iccf, ChewingOutput *pgo )
 		if ( ChewingIsChiAt( pgdata->chiSymbolCursor, pgdata ) ) 
 			toSelect = 1;
 	}
-
+	
+	
 	if ( toSelect ) {
 		if( ! pgdata->bSelect ) {
 			ChoiceFirstAvail( pgdata );
 		} else {
 			ChoiceNextAvail( pgdata );
 		}
-	}
+	}/* else {
+		if( ! pgdata->bSelect ) {
+			pgdata->bSelect = 1;
+            CallPhrasing( pgdata );
+		}
+	}*/
 
 	MakeOutputWithRtn( pgo, pgdata, keystrokeRtn );
 	return 0;
@@ -700,7 +712,10 @@ int OnKeyTab( void *iccf, ChewingOutput *pgo )
 
 
 	if ( ! pgdata->bSelect ) {
-		if ( ChewingIsChiAt( pgdata->chiSymbolCursor - 1, pgdata ) ) {
+		if( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen ) {
+			pgdata->phrOut.nNumCut ++;
+		}
+		else if ( ChewingIsChiAt( pgdata->chiSymbolCursor - 1, pgdata ) ) {
 			if ( IsPreferIntervalConnted( pgdata->cursor, pgdata) ) {
 				pgdata->bUserArrBrkpt[ pgdata->cursor ] = 1;
 				pgdata->bUserArrCnnct[ pgdata->cursor ] = 0;
@@ -971,8 +986,7 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
                 MakeOutputWithRtn( pgo, pgdata, keystrokeRtn );
                 return 0;
 	}
-
-        if ( ! pgdata->config.bAddPhraseForward ) {
+	if ( ! pgdata->config.bAddPhraseForward ) {
 		if ( 
 			newPhraseLen >= 1 && 
 			pgdata->cursor + newPhraseLen - 1 <= pgdata->nPhoneSeq ) {

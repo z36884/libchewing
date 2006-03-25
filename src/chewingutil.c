@@ -373,6 +373,8 @@ void CleanAllBuf( ChewingData *pgdata )
 	pgdata->chiSymbolCursor = 0;
 	/* 7 */
 	memset( pgdata->bUserArrCnnct, 0, sizeof( pgdata->bUserArrCnnct ) );
+
+	pgdata->phrOut.nNumCut = 0;
 }
 
 int ReleaseChiSymbolBuf( ChewingData *pgdata, ChewingOutput *pgo )
@@ -841,3 +843,63 @@ int IsPreferIntervalConnted( int cursor, ChewingData *pgdata )
 	return 0;
 }
 
+//int SelectSymbol( ChewingData *pgdata )
+//{
+//	char *symbol_buf[][20] = {
+//		{ "[", "『", "「", "』", "」" },
+//		{},
+//		{},
+//		{}
+//	}
+//	int i, symbol_buf_len = 4;
+//	char *pBuf;
+//
+//	/* save old cursor position */
+//	pgdata->choiceInfo.oldCursor = pgdata->cursor;
+//	pgdata->choiceInfo.oldChiSymbolCursor = pgdata->chiSymbolCursor;
+//
+//	/* see if there is some word in the cursor position */
+//	if ( pgdata->nPhoneSeq == pgdata->cursor )
+//		pgdata->cursor--;
+//	if ( pgdata->chiSymbolBufLen == pgdata->chiSymbolCursor )
+//		pgdata->chiSymbolCursor--;
+//
+//	pgdata->bSelect = 1;
+//
+//	pgdata->availInfo.nAvail = 1;
+//	pgdata->availInfo.currentAvail = 0;
+//	pgdata->availInfo.avail[0].id = -1;
+//	pgdata->availInfo.avail[0].len = 1;
+//
+//	for( int i = 0; i < symbol_buf_len; i++ ) {
+//		if( strcmp( symbol[i][0], pgdata->chiSymbolBuf[pgdata->chiSymbolCursor].s ) )
+//			pBuf = symbil[i];
+//	}
+//
+//
+//
+//
+//	
+//	pgdata->choiceInfo->nTotalChoice = ;
+//	
+//	int i, all = 216;
+//
+//    pci->nTotalChoice = 0;
+//    for(i = 0; i< all; i++){
+//		ueStrNCpy( pci->totalChoiceStr[ pci->nTotalChoice ],
+//				chibuf[i], 1, 1);
+//		pci->nTotalChoice++; 
+//    }  
+//    pai->avail[0].len = 1;
+//    pai->avail[0].id = -1;  
+//    pai->nAvail = 1;
+//    pai->currentAvail = 0;
+//    //pci->nChoicePerPage = (selectAreaLen - 5) / ( 2 + 3) ;
+//    pci->nChoicePerPage = selectAreaLen / 2;
+//    if(pci->nChoicePerPage > MAX_SELKEY) pci->nChoicePerPage = MAX_SELKEY ;
+//    pci->nPage = CEIL_DIV(pci->nTotalChoice, pci->nChoicePerPage) ;
+//    pci->pageNo = 0 ;
+//    pci->isSymbol = 1;
+//    return ZUIN_ABSORB;
+//	return 0;
+//}
