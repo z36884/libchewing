@@ -51,6 +51,7 @@ int ChewingKillChar(
 		int minus );
 void RemoveSelectElement( int i, ChewingData *pgdata );
 int IsPreferIntervalConnted( int cursor, ChewingData *pgdata );
+int OpenSymbolChoice( ChewingData *pgdata );
 
 #endif
 

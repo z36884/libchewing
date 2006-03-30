@@ -241,7 +241,7 @@ static int DoSelect( ChewingData *pgdata, int num )
 		num += pgdata->choiceInfo.pageNo * pgdata->choiceInfo.nChoicePerPage;
 		/* Note: if num is larger than the total, there will be big troubles. */
 		if ( num < pgdata->choiceInfo.nTotalChoice ) {
-			if ( pgdata->choiceInfo.isSymbol == 1 ) {
+			if ( pgdata->choiceInfo.isSymbol ) {
 				SymbolChoice( pgdata, num );
 			} else { 
 				/* change the select interval & selectStr & nSelect */
@@ -268,7 +268,7 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 	ChewingData *pgdata = (ChewingData *) iccf;
 	int keystrokeRtn = KEYSTROKE_ABSORB;
 	int toSelect = 0;
-	int rtn;
+	int rtn, key_buf_cursor;
 
 	/* check if Old Chewing style */
 	if ( ! pgdata->config.bSpaceAsSelection ) {
@@ -349,28 +349,27 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 				break;
 			case ZUIN_KEY_ERROR:
 			case ZUIN_IGNORE:
-				if ( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen ) {
-					if (
-						ChewingIsChiAt(
-							pgdata->chiSymbolCursor - 1,
-							pgdata ) ) {
-						toSelect = 1;
 
-					}
-				} else {
-					if (
-						ChewingIsChiAt(
-							pgdata->chiSymbolCursor,
-							pgdata ) ) {
-						toSelect = 1;
-					}
-				}
+				key_buf_cursor = pgdata->chiSymbolCursor;
+				if( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen )
+					key_buf_cursor--;
+
+				/* see if to select */
+				if ( ChewingIsChiAt( key_buf_cursor, pgdata ) )
+					toSelect = 1;
+
 				if ( toSelect ) {
 					if ( ! pgdata->bSelect )
 						ChoiceFirstAvail( pgdata );
 					else
 						ChoiceNextAvail( pgdata );
+				} 
+				else if ( pgdata->symbolKeyBuf[ key_buf_cursor ] ) {
+					/* Open Symbol Choice List */
+					if( ! pgdata->choiceInfo.isSymbol )
+						OpenSymbolChoice( pgdata );
 				}
+
 				break;
 		}
 	}
@@ -535,35 +534,33 @@ int OnKeyDown( void *iccf, ChewingOutput *pgo )
 	ChewingData *pgdata = (ChewingData *) iccf;
 	int toSelect = 0;
 	int keystrokeRtn = KEYSTROKE_ABSORB;
+	int key_buf_cursor;
 
 	CheckAndResetRange( pgdata );
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
 		keystrokeRtn = KEYSTROKE_IGNORE;
 	}
+	
+	key_buf_cursor = pgdata->chiSymbolCursor;
+	if( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen )
+		key_buf_cursor--;
 
 	/* see if to select */
-	if ( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen ) {
-		if ( ChewingIsChiAt( pgdata->chiSymbolCursor - 1, pgdata ) )
+	if ( ChewingIsChiAt( key_buf_cursor, pgdata ) )
 			toSelect = 1;
-	} else {
-		if ( ChewingIsChiAt( pgdata->chiSymbolCursor, pgdata ) ) 
-			toSelect = 1;
-	}
-	
-	
+
 	if ( toSelect ) {
 		if( ! pgdata->bSelect ) {
 			ChoiceFirstAvail( pgdata );
 		} else {
 			ChoiceNextAvail( pgdata );
 		}
-	}/* else {
-		if( ! pgdata->bSelect ) {
-			pgdata->bSelect = 1;
-            CallPhrasing( pgdata );
-		}
-	}*/
+	} else if ( pgdata->symbolKeyBuf[ key_buf_cursor ] ) {
+		/* Open Symbol Choice List */
+		if( ! pgdata->choiceInfo.isSymbol )
+			OpenSymbolChoice( pgdata );
+	}
 
 	MakeOutputWithRtn( pgo, pgdata, keystrokeRtn );
 	return 0;
@@ -929,7 +926,6 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 			else {
 				rtn = SymbolInput( key, pgdata );
 			}
-
 			if ( rtn == SYMBOL_KEY_ERROR ) {
 				keystrokeRtn = KEYSTROKE_IGNORE;
 				bQuickCommit = 0;
