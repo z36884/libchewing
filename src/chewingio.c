@@ -447,7 +447,7 @@ int OnKeyEnter( void *iccf, ChewingOutput *pgo )
 #endif
 		AutoLearnPhrase( pgdata );
 		CleanAllBuf( pgdata );  
-		CallPhrasing( pgdata );
+		//CallPhrasing( pgdata );
 		pgo->nCommitStr = nCommitStr;
 	}
 
@@ -947,6 +947,14 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 			pgdata->chiSymbolCursor = 0;
 			keystrokeRtn = KEYSTROKE_COMMIT;
 		}
+	}
+	if( pgdata->phrOut.nNumCut > 0 ) {
+		int i;
+		for ( i = 0; i < pgdata->phrOut.nDispInterval; i++ ) {
+			pgdata->bUserArrBrkpt[ pgdata->phrOut.dispInterval[i].from ] = 1;
+			pgdata->bUserArrBrkpt[ pgdata->phrOut.dispInterval[i].to ] = 1;
+		}
+		pgdata->phrOut.nNumCut = 0;
 	}
 
 End_OnKeyDefault:

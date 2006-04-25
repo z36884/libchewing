@@ -928,7 +928,7 @@ void ShowList( TreeDataType *ptd )
 RecordNode* NextCut( TreeDataType *tdt, PhrasingOutput *ppo )
 {
 	int i;
-	if( ppo->nNumCut == tdt->nPhListLen ) 
+	if( ppo->nNumCut >= tdt->nPhListLen ) 
 		ppo->nNumCut = 0;
 	for( i = 0; i < ppo->nNumCut; i++ )
 		tdt->phList = tdt->phList->next;
