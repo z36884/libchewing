@@ -37,10 +37,10 @@ static HASH_ITEM *hashtable[ HASH_TABLE_SIZE ];
 static char formatstring[ 30 ];
 static char hashfilename[ 200 ];
 
-int AlcUserPhraseSeq( UserPhraseData *pData, int len )
+int AlcUserPhraseSeq( UserPhraseData *pData, int phonelen, int wordlen)
 {
-	pData->phoneSeq = ALC( uint16, len + 1 );
-	pData->wordSeq = ALC( char, len * 3 + 1 );
+	pData->phoneSeq = ALC( uint16, phonelen + 1 );
+	pData->wordSeq = ALC( char, wordlen + 1 );
 	return ( pData->phoneSeq && pData->wordSeq );
 }
 
@@ -108,7 +108,7 @@ HASH_ITEM *HashInsert( UserPhraseData *pData )
 	if ( ! pItem )
 		return NULL;  /* Error occurs */
 	len = ueStrLen( pData->wordSeq );
-	if ( ! AlcUserPhraseSeq( &( pItem->data ), len ) )
+	if ( ! AlcUserPhraseSeq( &( pItem->data ), len, strlen(pData->wordSeq) ) )
 		return NULL; /* Error occurs */
 
 	hashvalue = HashFunc( pData->phoneSeq );
@@ -319,7 +319,6 @@ int ReadHashItem_txt( FILE *infile, HASH_ITEM *pItem, int item_index )
 	return 1;
 }
 
-<<<<<<< .mine
 static FILE* open_file_get_length(const char *filename, const char *otype, int *size)
 {
 	FILE *tf = fopen(filename, otype);
@@ -425,7 +424,6 @@ static int migrate_hash_to_bin(const char *ofilename)
 	return	1;
 }
 
-=======
 int ComputeChewingLifeTime() {
 	HASH_ITEM *item;
 	int i, min;
@@ -468,70 +466,6 @@ int ComputeChewingLifeTime() {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> .theirs
 int ReadHash( char *path )
 {
 	HASH_ITEM item, *pItem;
@@ -578,8 +512,12 @@ open_hash_file:
 	if ( dump==NULL || fsize<hdrlen ) {
 		FILE *outfile;
 		outfile = fopen(hashfilename, "w+b" );
-		if ( ! outfile )
+		if ( ! outfile ) {
+			if ( dump ) {
+				free(dump);
+			}
 			return 0;
+		}
 
 		chewing_lifetime = 0;
 		fwrite(BIN_HASH_SIG, 1, strlen(BIN_HASH_SIG), outfile);
