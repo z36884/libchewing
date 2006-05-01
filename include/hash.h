@@ -24,6 +24,7 @@ extern "C" {
 
 #define FIELD_SIZE (125)
 #define N_HASH_BIT (14)
+#define BIN_HASH_SIG "CBiH"
 #ifdef	WIN32
   /* Change file name to uhash.dat to make the newer 
      UTF8-encoded file distinguishable from the older one */
@@ -56,6 +57,15 @@ int ReadHash( char *path );
 void FreeHashTable( void );
 
 void HashItem2String(char *str, HASH_ITEM *pItem);
+
+char* _load_hash_file(const char *filename, int *size);
+
+int ReadHashItem_bin(const char *srcbuf, HASH_ITEM *pItem, int item_index );
+
+void HashItem2Binary( char *str, HASH_ITEM *pItem );
+
+void HashModify( HASH_ITEM *pItem);
+
 
 #ifdef __cplusplus
 }
