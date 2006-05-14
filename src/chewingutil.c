@@ -695,7 +695,17 @@ int MakeOutput( ChewingOutput *pgo, ChewingData *pgdata )
         if(pgdata->zuinData.kbtype >= KB_HANYU_PINYING) {
 		char *p = pgdata->zuinData.pinYingData.keySeq;
 		for ( i = 0; i< ZUIN_SIZE; i++) {
-			ueStrNCpy( pgo->zuinBuf[i].s, p, 1, 1);
+//			ueStrNCpy( pgo->zuinBuf[i].s, p, 1, 1);
+			int j;
+			for(j = 0; j < 2; j++) {
+				if(p[0]) {
+					pgo->zuinBuf[i].s[j] = p[0];
+					p++;
+				} else {
+					pgo->zuinBuf[i].s[j] = '\0';
+				}
+			}
+			pgo->zuinBuf[i].s[2]='\0';
 		}
 	} else {
 		for ( i = 0; i < ZUIN_SIZE; i++ ) { 
