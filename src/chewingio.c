@@ -48,6 +48,8 @@ void (*TerminateServices[ TerminateServicesNUM ])() = {
 static int countTerminateService = 0;
 static int bTerminateCompleted = 0;
 
+extern int chewing_lifetime;
+
 static char *kb_type_str[] = {
 	"KB_DEFAULT",
 	"KB_HSU",
@@ -830,6 +832,8 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 	int rtn, num;
 	int keystrokeRtn = KEYSTROKE_ABSORB;
 	int bQuickCommit = 0;
+	
+	chewing_lifetime++;
 
 	/* Skip the special key */
 	if ( key & 0xFF00 ) {
