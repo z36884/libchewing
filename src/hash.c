@@ -131,7 +131,7 @@ void HashItem2Binary( char *str, HASH_ITEM *pItem )
 {
 	int i, phraselen;
 	uint16 *pshort;
-	unsigned char buf[ FIELD_SIZE ], *puc;
+	unsigned char *puc;
 
 	memset(str, 0, FIELD_SIZE);
 	if ( sizeof(int)*4 + ueStrLen(pItem->data.wordSeq)*2 +
@@ -201,10 +201,10 @@ void HashModify( HASH_ITEM *pItem)
 
 static int isChineseString(char *str)
 {
-	if ( str==NULL || *str==NULL ) {
+	if ( str==NULL || *str=='\0' ) {
 		return	0;
 	}
-	while ( *str != NULL )	{
+	while ( *str != '\0' )	{
 		int len = ueBytesFromChar( (unsigned char)*str );
 		if ( len <= 1 )	{
 			return	0;
@@ -222,9 +222,8 @@ static int isChineseString(char *str)
  */
 int ReadHashItem_bin(const char *srcbuf, HASH_ITEM *pItem, int item_index )
 {
-	int len, i, word_len, ptr;
+	int len, i;
 	uint16 *pshort;
-	char wordbuf[ 64 ];
 	unsigned char recbuf[FIELD_SIZE], *puc;
 
 	memcpy(recbuf, srcbuf, FIELD_SIZE);
@@ -366,8 +365,8 @@ static int migrate_hash_to_bin(const char *ofilename)
 {
 	FILE *txtfile;
 	char	oldname[256], *dump, *seekdump;
-	HASH_ITEM item, *pItem;
-	int item_index, hashvalue, iret, tflen;
+	HASH_ITEM item;
+	int item_index, iret, tflen;
 
 	/* allocate dump buffer */
 	txtfile = open_file_get_length(ofilename, "r", &tflen);
@@ -526,7 +525,6 @@ open_hash_file:
 		fclose( outfile );
 	}
 	else {
-		char header[5];
 		if ( memcmp(dump, BIN_HASH_SIG, strlen(BIN_HASH_SIG))!=0 ) {
 			//  migrate it
 			free(dump);

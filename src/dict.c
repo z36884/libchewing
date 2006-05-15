@@ -75,6 +75,7 @@ int InitDict( const char *prefix )
 
 #ifndef	USE_BINARY_DAT
 	FILE* indexfile;
+	int i;
 #else	/* Use binary data format */
 	#ifndef WIN32
 		int indexfile;
@@ -82,7 +83,6 @@ int InitDict( const char *prefix )
 	#endif
 #endif	/* USE_BINARY_DAT */
 
-	int i;
 	char filename[ 100 ];
 
 	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, DICT_FILE );

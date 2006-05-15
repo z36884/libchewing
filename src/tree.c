@@ -112,9 +112,9 @@ void ReadTree( const char *prefix )
 	DWORD file_size;
 #endif
 
-	int i;
 	char filename[ 100 ];
 #ifndef	USE_BINARY_DAT
+	int i;
 	FILE *infile;
 #else
 	#ifndef WIN32

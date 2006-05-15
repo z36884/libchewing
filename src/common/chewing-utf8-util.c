@@ -42,9 +42,9 @@ int
 ueStrNCpy(char *dest, const char *src, size_t n, int end)
 {
    int i = 0, len = 0;
-   char *iter;
-   iter = (char*)src;
-   for( i = 0; i < n; i++ )
+   const char *iter = src;
+
+   for( i = 0; i < (int) n; i++ )
    {
        len += ueBytesFromChar(iter[len]);
    }
@@ -58,9 +58,9 @@ char*
 ueStrSeek(char *src, size_t n)
 {
     int i = 0;
-    char *iter;
-	iter = (char*)src;
-    for( i = 0; i < n; i++ )
+    char *iter = src;
+
+    for( i = 0; i < (int) n; i++ )
     {
         iter += ueBytesFromChar(iter[0]);
     }

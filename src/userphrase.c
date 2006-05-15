@@ -131,12 +131,10 @@ int UpdateFreq( int freq, int maxfreq, int origfreq, int deltatime )
 
 int UserUpdatePhrase( const uint16 phoneSeq[], const char wordSeq[] )
 {
-	HASH_ITEM *pItem;
 	UserPhraseData data;
-	int len;
+	int len = ueStrLen( (char *) wordSeq );
+	HASH_ITEM *pItem = HashFindEntry( phoneSeq, wordSeq );
 
-	len = ueStrLen( wordSeq );
-	pItem = HashFindEntry( phoneSeq, wordSeq );
 	if ( ! pItem ) {
 		if ( ! AlcUserPhraseSeq( &data, len, strlen(wordSeq)) ) {
 			return USER_UPDATE_FAIL;

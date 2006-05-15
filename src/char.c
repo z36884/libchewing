@@ -87,9 +87,9 @@ int InitChar( const char *prefix )
 #endif
 
 	char filename[ 100 ];
-	int i;
 
 #ifndef	USE_BINARY_DAT
+	int i;
 	FILE* indexfile;
 #else	/* Use binary data format */
 	long file_size;
@@ -169,7 +169,7 @@ void Str2Word( Word *wrd_ptr )
 	fgettab( buf, 1000, dictfile );
 	/* only read 6 bytes to wrd_ptr->word avoid buffer overflow */
 	sscanf( buf, "%hu %6s", &sh, wrd_ptr->word );
-	assert(wrd_ptr->word[0] != NULL);
+	assert(wrd_ptr->word[0] != '\0');
 }
 
 int GetCharFirst( Word *wrd_ptr, uint16 phoneid )

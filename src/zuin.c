@@ -401,7 +401,7 @@ int PinYingInput( ZuinData *pZuin, int key )
 			return ZUIN_KEY_ERROR;
 
 		DEBUG_OUT( "zuinKeySeq: %s\n", zuinKeySeq );
-		for ( i = 0; i < strlen( zuinKeySeq ); i++ ) {
+		for ( i = 0; i < (int) strlen( zuinKeySeq ); i++ ) {
 			status = DefPhoInput( pZuin, zuinKeySeq[ i ] );
 			if ( status != ZUIN_ABSORB )
 				return ZUIN_KEY_ERROR;
