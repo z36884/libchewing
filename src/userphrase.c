@@ -25,6 +25,7 @@
 extern int chewing_lifetime;
 static HASH_ITEM *pItemLast;
 
+#if 0
 int DeltaFreq( int recentTime )
 {
 	int diff;
@@ -39,9 +40,10 @@ int DeltaFreq( int recentTime )
 		return ( 2500 - diff ); /* 500 ~ -500 */
 	return ( -500 );    /* -500 forever */
 }
+#endif
 
 /* load the orginal frequency from the static dict */
-int LoadOriginalFreq( const uint16 phoneSeq[], const char wordSeq[], int len )
+static int LoadOriginalFreq( const uint16 phoneSeq[], const char wordSeq[], int len )
 {
 	int pho_id;
 	int retval;
@@ -68,7 +70,7 @@ int LoadOriginalFreq( const uint16 phoneSeq[], const char wordSeq[], int len )
 }
 
 /* find the maximum frequency of the same phrase */
-int LoadMaxFreq( const uint16 phoneSeq[], int len )
+static int LoadMaxFreq( const uint16 phoneSeq[], int len )
 {
 	int pho_id;
 	Phrase *phrase = ALC( Phrase, 1 );
@@ -96,7 +98,7 @@ int LoadMaxFreq( const uint16 phoneSeq[], int len )
 }
 
 /* compute the new updated freqency */
-int UpdateFreq( int freq, int maxfreq, int origfreq, int deltatime )
+static int UpdateFreq( int freq, int maxfreq, int origfreq, int deltatime )
 {
 	int delta;
 

@@ -13,7 +13,8 @@
  */
 
 #ifdef WIN32
-#include <windows.h>
+	#include <windows.h>
+	#include <direct.h>
 #endif
 #include <string.h>
 #include <sys/stat.h>

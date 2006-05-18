@@ -62,7 +62,7 @@ static char *fgettab( char *buf, int maxlen, FILE *fp )
 	return buf;
 }
 
-int CompUint16( const uint16 *pa, const uint16 *pb )
+static int CompUint16( const uint16 *pa, const uint16 *pb )
 {
 	return ( (*pa) - (*pb) );
 }
@@ -161,7 +161,7 @@ int InitChar( const char *prefix )
 	return 1;
 }
 
-void Str2Word( Word *wrd_ptr )
+static void Str2Word( Word *wrd_ptr )
 {
 	char buf[ 1000 ];
 	uint16 sh;

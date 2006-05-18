@@ -1010,7 +1010,7 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 				addPhoneSeq[ newPhraseLen ] = 0;
 				ueStrNCpy(
 						addWordSeq,
-						ueStrSeek( &pgdata->phrOut.chiBuf,
+						ueStrSeek( (char *) &pgdata->phrOut.chiBuf,
 							pgdata->cursor ),
 						newPhraseLen, 1);
 
@@ -1044,7 +1044,7 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 				addPhoneSeq[ newPhraseLen ] = 0;
 				ueStrNCpy(
 						addWordSeq,
-						ueStrSeek( &pgdata->phrOut.chiBuf,
+						ueStrSeek( (char *) &pgdata->phrOut.chiBuf,
 							pgdata->cursor - newPhraseLen ),
 						newPhraseLen, 1);
 

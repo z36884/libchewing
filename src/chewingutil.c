@@ -432,7 +432,7 @@ void AutoLearnPhrase( ChewingData *pgdata )
 		memcpy( bufPhoneSeq, &pgdata->phoneSeq[ from ], sizeof( uint16 ) * len );
 		bufPhoneSeq[ len ] = (uint16) 0;
 		ueStrNCpy( bufWordSeq,
-				ueStrSeek( &pgdata->phrOut.chiBuf, from ),
+				ueStrSeek( (char *) &pgdata->phrOut.chiBuf, from ),
 				len, 1);
 		UserUpdatePhrase( bufPhoneSeq, bufWordSeq );
 	}
@@ -711,7 +711,7 @@ int MakeOutput( ChewingOutput *pgo, ChewingData *pgdata )
 		for ( i = 0; i < ZUIN_SIZE; i++ ) { 
 			if ( pgdata->zuinData.pho_inx[ i ] != 0 ) {
 				ueStrNCpy( pgo->zuinBuf[ i ].s,
-						ueStrSeek( zhuin_tab[ i ] + 2, pgdata->zuinData.pho_inx[ i ] - 1 ),
+						ueStrSeek( (char *) (zhuin_tab[ i ] + 2), pgdata->zuinData.pho_inx[ i ] - 1 ),
 						1, 1);
 				/* Here we should use (zhuin_tab[ i ] + 2) to skip the 2 space characters 
 				   at zhuin_tab[0] and zhuin_tab[1]. */

@@ -34,7 +34,12 @@
 static FILE *dictfile;
 static int end_pos;
 
-char* fgettab( char *buf, int maxlen, FILE *fp )
+/* hialan:
+ * function defined in chewingio.c proto
+ */
+int addTerminateService( void (*callback)() );
+
+static char* fgettab( char *buf, int maxlen, FILE *fp )
 {
 	int i;
 
