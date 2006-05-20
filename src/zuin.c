@@ -398,7 +398,10 @@ static int PinYingInput( ZuinData *pZuin, int key )
 	if ( IsPinYingEndKey( pZuin, key ) ) {
 		err = HanyuPinYingToZuin( pZuin->pinYingData.keySeq, zuinKeySeq );
 		if (err)
-			return ZUIN_KEY_ERROR;
+		{
+			pZuin->pinYingData.keySeq[ 0 ] = '\0';
+			return ZUIN_ABSORB;
+		}
 
 		DEBUG_OUT( "zuinKeySeq: %s\n", zuinKeySeq );
 		for ( i = 0; i < (int) strlen( zuinKeySeq ); i++ ) {

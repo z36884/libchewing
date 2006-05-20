@@ -81,7 +81,7 @@ uint16 UintFromPhone( const char *zhuin )
 
 int PhoneFromKey( char *pho, const char *inputkey, int kbtype, int searchTimes )
 {
-    int len = strlen( inputkey ), i, s;
+    int len = (int) strlen( inputkey ), i, s;
     char *pTarget;
 
     pho[ 0 ] = '\0';
@@ -98,7 +98,7 @@ int PhoneFromKey( char *pho, const char *inputkey, int kbtype, int searchTimes )
                 return 0;
             }
         }
-        index = findptr - key_str[ kbtype ];
+        index = (int) (findptr - key_str[ kbtype ]);
         /* XXX: Need to modify to satisfy UTF-8 */
         /*
         pho[ i * 2 ] = ph_str[ index * 2 ];
@@ -116,6 +116,7 @@ int PhoneFromKey( char *pho, const char *inputkey, int kbtype, int searchTimes )
     return 1;
 }
 
+#if 0
 int PhoneFromUint( char *phone, long seq )
 {
     int i, j, k;
@@ -132,6 +133,7 @@ int PhoneFromUint( char *phone, long seq )
     }
     return j;
 }
+#endif
 
 int PhoneInxFromKey( int key, int type, int kbtype, int searchTimes )
 {

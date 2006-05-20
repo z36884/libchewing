@@ -18,11 +18,14 @@
 
 #ifdef WIN32
 	#include <windows.h>
+	#include <io.h>
+	#include <fcntl.h>
 #else
-	#include <sys/types.h>
-	#include <sys/stat.h>
 	#include <unistd.h>
 #endif
+
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "dict.h"
 
@@ -35,7 +38,7 @@ static FILE *dictfile;
 static int end_pos;
 
 /* hialan:
- * function defined in chewingio.c proto
+ * function proto defined in chewingio.c 
  */
 int addTerminateService( void (*callback)() );
 
@@ -73,19 +76,14 @@ int InitDict( const char *prefix )
 	const char* DIRPATH_SEP_FILENAME = "%s/%s";
 #else
 	const char* DIRPATH_SEP_FILENAME = "%s\\%s";
-	HANDLE hInFile;
-	DWORD read_len;
-	DWORD file_size;
 #endif
 
 #ifndef	USE_BINARY_DAT
 	FILE* indexfile;
 	int i;
 #else	/* Use binary data format */
-	#ifndef WIN32
-		int indexfile;
-		struct stat file_stat;
-	#endif
+	int indexfile;
+	struct stat file_stat;
 #endif	/* USE_BINARY_DAT */
 
 	char filename[ 100 ];
@@ -96,29 +94,16 @@ int InitDict( const char *prefix )
 	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, PH_INDEX_FILE );
 
 #ifdef	USE_BINARY_DAT
-	#ifdef WIN32	/* Win32 */
-		hInFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+	indexfile = open( filename, O_RDONLY);
 
-		if( hInFile == INVALID_HANDLE_VALUE  )
-			return 0;
+	if( indexfile == -1 )
+		return 0;
+	fstat( indexfile, &file_stat );
 
-		file_size = GetFileSize( hInFile, NULL);
-		if(	begin = (int*)malloc(file_size + sizeof(int)) )
-			ReadFile( hInFile, begin, file_size, &read_len, NULL);
+	if(	begin = (int*)malloc( (size_t)file_stat.st_size + sizeof(int)) )
+		read( indexfile, begin, (size_t)file_stat.st_size );
 
-		CloseHandle(hInFile);
-	#else
-		indexfile = open( filename, O_RDONLY);
-
-		if( indexfile == -1 )
-			return 0;
-		fstat( indexfile, &file_stat );
-
-		if(	begin = (int*)malloc( (size_t)file_stat.st_size + sizeof(int)) )
-			read( indexfile, begin, file_size );
-
-		close( indexfile );
-	#endif /* WIN32 */
+	close( indexfile );
 #else
 	indexfile = fopen( filename, "r" );
 	assert( dictfile && indexfile );
@@ -131,7 +116,7 @@ int InitDict( const char *prefix )
 	return 1;
 }
 
-void Str2Phrase( Phrase *phr_ptr )
+static void Str2Phrase( Phrase *phr_ptr )
 {
 	char buf[ 1000 ];
 
