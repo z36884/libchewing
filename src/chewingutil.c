@@ -1063,8 +1063,8 @@ int InitSymbolTable( const char *prefix )
 				symbol = symbols;
 				for( i = 0; i < len; ++i )
 				{
-					symbol += ueBytesFromChar( symbol[0] );
 					ueStrNCpy( tmp_tab[n_symbol_entry]->symbols[i], symbol, 1, 1 );
+					symbol += ueBytesFromChar( symbol[0] );
 				}
 			}
 			else{
