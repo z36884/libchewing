@@ -390,12 +390,14 @@ int OnKeyEsc( void *iccf, ChewingOutput *pgo )
 	if ( ! ChewingIsEntering( pgdata ) ) {
 		keystrokeRtn = KEYSTROKE_IGNORE;
 	} else if ( pgdata->bSelect ) {
-		if ( pgdata->choiceInfo.isSymbol == 1 ) {
-			ChewingKillChar(
+		if ( pgdata->choiceInfo.isSymbol != 0 ) {
+		/* TODO: this should be checked again. */
+/*			ChewingKillChar(
 				pgdata, 
 				pgdata->cursor - 1, 
 				pgdata->chiSymbolCursor - 1,
 				DECREASE_CURSOR );
+*/
 		}
 		ChoiceEndChoice( pgdata );
 	} else if ( ZuinIsEntering( &( pgdata->zuinData ) ) ) {
@@ -862,6 +864,19 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 	/* editing */
 	else {
 		if ( pgdata->bChiSym == CHINESE_MODE ) {
+			/* open symbol table */
+			if( key == '`' ) {
+				pgdata->bSelect = 1;
+				pgdata->choiceInfo.oldChiSymbolCursor = pgdata->chiSymbolCursor;
+				pgdata->choiceInfo.oldCursor = pgdata->cursor;
+
+				HaninSymbolInput(
+					&( pgdata->choiceInfo ), 
+					&( pgdata->availInfo ), 
+					pgdata->phoneSeq, 
+					pgdata->config.selectAreaLen ); 
+				goto End_OnKeyDefault;
+			}
 			rtn = ZuinPhoInput( &( pgdata->zuinData ), key );
 			DEBUG_OUT(
 				"\t\tchinese mode key, "
@@ -982,17 +997,8 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 	CallPhrasing( pgdata );
 	newPhraseLen = key - '0';
 
-	if ( ( key == '0' || key == '1') && ! pgdata->bSelect ) {
-		pgdata->bSelect = 1;  
-		HaninSymbolInput(
-			&( pgdata->choiceInfo ), 
-			&( pgdata->availInfo ), 
-			pgdata->phoneSeq, 
-			pgdata->config.selectAreaLen ); 
-		SemiSymbolInput('1', pgdata);
-                CallPhrasing( pgdata );
-                MakeOutputWithRtn( pgo, pgdata, keystrokeRtn );
-                return 0;
+	if ( ( key == '0' || key == '1') ) {
+        return 0;
 	}
 	if ( ! pgdata->config.bAddPhraseForward ) {
 		if ( 

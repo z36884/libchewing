@@ -29,6 +29,9 @@ extern const char *zhuin_tab[];
 static void MakePreferInterval( ChewingData *pgdata );
 static void ShiftInterval( ChewingOutput *pgo, ChewingData *pgdata );
 
+static SymbolEntry** symbol_table = NULL;
+static int n_symbol_entry = 0;
+
 void SetUpdatePhraseMsg( ChewingData *pgdata, char *addWordSeq, int len, int state )
 {
 	char *insert = "加入－", *modify = "已有－";
@@ -89,41 +92,16 @@ int ChewingIsEntering( ChewingData *pgdata )
 #define CEIL_DIV(a,b) ((a+b-1)/b)
 
 int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	int selectAreaLen) {
-    static char *chibuf[] = { "，","、","。","．","；","：",
-                              "？","！","︰","?","…","‥","｜","—", "︴","﹏",
-		"（","）","︵","︶","《","》","︽","︾",
-		"〈","〉","︿","﹀","【","】","︻","︼",
-		"｛","｝","︷","︸","〔","〕","︹","︺",
-		"「","」","﹁","﹂","『","』","﹃","﹄",
-		"＃","＆","＊","※","§","〃","○","●",
-		"◎","㊣","△","▽","▲","▼","∴","∵",
-		"☆","★","◇","◆","□","■","♀","♂",
-		"→","←","↑","↓","↗","↖","↘","↙",
-		"㏕","㎜","㎝","㎞","㏎","㎡","㎎","㎏",
-		"㏄","℃","℉","°","±","×","÷","≒",
-		"≠","≦","≧","～","∠","⊥","∟","≡",
-		"⊿","∞","√","?","┌","┬","┐","├",
-		"┼","┤","└","┴","┘","─","│","═",
-		"╞","╪","╡","╱","╲","╳","╭","╮",
-		"╰","╯","▁","▂","▃","▄","▅","▆",
-		"▇","█","▏","▎","▍","▌","▋","▊",
-		"▉","▔","〡","〢","〣","〤","〥","〦",
-		"〧","〨","〩","十","卄","卅","Ⅰ","Ⅱ",
-		"Ⅲ","Ⅳ","Ⅴ","Ⅵ","Ⅶ","Ⅷ","Ⅸ","Ⅹ",
-		"Α","Β","Γ","Δ","Ε","Ζ","Η","Θ",
-		"Ι","Κ","Λ","Μ","Ν","Ξ","Ο","Π",
-		"Ρ","Σ","Τ","Υ","Φ","Χ","Ψ","Ω",
-		"α","β","γ","δ","ε","ζ","η","θ",
-		  "ι","κ","λ","μ","ν","ξ","ο","π",
-		  "ρ","σ","τ","υ","φ","χ","ψ","ω"};
-    int i, all = 216;
+	int i;
+
+	if( !symbol_table )	/* No available symbol table */
+		return ZUIN_ABSORB;
 
     pci->nTotalChoice = 0;
-    for(i = 0; i< all; i++){
-		ueStrNCpy( pci->totalChoiceStr[ pci->nTotalChoice ],
-				chibuf[i], 1, 1);
+    for(i = 0; i< n_symbol_entry; i++){
+		strcpy( pci->totalChoiceStr[ pci->nTotalChoice ], symbol_table[i]->category );
 		pci->nTotalChoice++; 
-    }  
+    }
     pai->avail[0].len = 1;
     pai->avail[0].id = -1;  
     pai->nAvail = 1;
@@ -242,23 +220,81 @@ int SpecialEtenSymbolInput( int key, ChewingData *pgdata )
 }
 
 int SymbolChoice(ChewingData *pgdata, int sel_i){
-        int kbtype;
-		if( pgdata->choiceInfo.isSymbol == 1 )
-			pgdata->chiSymbolCursor -- ;
-	memmove( &(pgdata->chiSymbolBuf[pgdata->chiSymbolCursor]),
-                 &(pgdata->chiSymbolBuf[pgdata->chiSymbolCursor] ) ,
-                 sizeof(wch_t)*
-                 (pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor) ) ;
-	pgdata->chiSymbolBuf[pgdata->chiSymbolCursor].wch = (wchar_t) 0 ;
-	ueStrNCpy( pgdata->chiSymbolBuf[pgdata->chiSymbolCursor].s,
-			pgdata->choiceInfo.totalChoiceStr[sel_i], 1, 1);
-	pgdata->chiSymbolCursor ++ ; 
-	pgdata->bUserArrCnnct[pgdata->cursor] = 0;
-	ChoiceEndChoice(pgdata);
-        /* Don't forget the kbtype */
-        kbtype = pgdata->zuinData.kbtype;
-        memset( &( pgdata->zuinData ), 0, sizeof( ZuinData ) );
-        pgdata->zuinData.kbtype = kbtype;
+    int kbtype;
+	int i;
+	int symbol_type;
+	int key;
+
+	if( ! symbol_table && pgdata->choiceInfo.isSymbol != 3 )
+		return ZUIN_ABSORB;
+
+	if( pgdata->choiceInfo.isSymbol == 1 && 
+		0 == symbol_table[sel_i]->nSymbols )
+		symbol_type = 2;
+	else
+		symbol_type = pgdata->choiceInfo.isSymbol;
+
+	/* level one, symbol category */
+	if( symbol_type == 1 )
+	{
+		ChoiceInfo* pci = &pgdata->choiceInfo;
+		AvailInfo* pai = &pgdata->availInfo;
+
+		/* Display all symbols in this category */
+		pci->nTotalChoice = 0;
+		for(i = 0; i< symbol_table[sel_i]->nSymbols; i++){
+			ueStrNCpy( pci->totalChoiceStr[ pci->nTotalChoice ],
+						symbol_table[sel_i]->symbols[i], 1, 1);
+			pci->nTotalChoice++;
+		}
+		pai->avail[0].len = 1;
+		pai->avail[0].id = -1;  
+		pai->nAvail = 1;
+		pai->currentAvail = 0;
+		pci->nChoicePerPage = (pgdata->config.selectAreaLen - 5) / ( 2 + 3) ;
+		if(pci->nChoicePerPage > MAX_SELKEY) pci->nChoicePerPage = MAX_SELKEY ;
+		pci->nPage = CEIL_DIV(pci->nTotalChoice, pci->nChoicePerPage) ;
+		pci->pageNo = 0 ;
+		pci->isSymbol = 2;
+	}
+	else	/* level 2 symbol or OpenSymbolChoice */
+	{
+		/* TODO: FIXME, this part is buggy! */
+		if( symbol_type == 2 )
+		{
+			memmove( 
+					&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
+					&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] ),
+					sizeof( wch_t ) * 
+					( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
+		}
+		pgdata->chiSymbolBuf[pgdata->chiSymbolCursor].wch = (wchar_t) 0 ;
+		ueStrNCpy( pgdata->chiSymbolBuf[pgdata->chiSymbolCursor].s,
+				pgdata->choiceInfo.totalChoiceStr[sel_i], 1, 1);
+
+		/* This is very strange */
+		key = FindSymbolKey( pgdata->choiceInfo.totalChoiceStr[sel_i] );
+		pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor ] = key ? key : '1';
+
+		pgdata->bUserArrCnnct[pgdata->cursor] = 0;
+		ChoiceEndChoice(pgdata);
+			/* Don't forget the kbtype */
+			kbtype = pgdata->zuinData.kbtype;
+			memset( &( pgdata->zuinData ), 0, sizeof( ZuinData ) );
+			pgdata->zuinData.kbtype = kbtype;
+
+		if( symbol_type == 2 ) {
+			pgdata->chiSymbolBufLen++;
+//				pgdata->cursor++;
+				pgdata->chiSymbolCursor ++ ; 
+			if( ! pgdata->bAutoShiftCur ) {
+			}
+		}
+		else if( symbol_type == 3 )	{ /* OpenSymbolChoice */
+			
+		}
+		pgdata->choiceInfo.isSymbol = 0;
+	}
 	return ZUIN_ABSORB;
 }
 
@@ -870,69 +906,82 @@ int IsPreferIntervalConnted( int cursor, ChewingData *pgdata )
 	return 0;
 }
 
+static char *symbol_buf[][50] = {
+	/*{ "1", "√", "", "", "", "", "", "", 0},*/
+	{"0","ø", 0},
+	{ "[", "「", "『", "《", "〈", "【", "〔", 0 },
+	{ "]", "」", "』", "》", "〉", "】", "〕", 0 },
+	{ "{", "｛", 0 },
+	{ "}", "｝", 0 },
+	{ "<", "，", "←", 0 },
+	{ ">", "。", "→", "．", 0 },
+	{ "?", "？","¿", 0 },
+	{ "!", "！", "①", "➀", "Ⅰ","¡", 0 },
+	{ "@", "＠", "②", "➁", "Ⅱ", "⊕", "⊙", "㊣", "﹫", 0 },
+	{ "#", "＃", "③", "➂", "Ⅲ", "﹟", 0 },
+	{ "$", "＄", "④", "➃", "Ⅳ", "€", "﹩", "￠", "∮","￡", "￥", 0 },
+	{ "%", "％", "⑤", "➄", "Ⅴ", 0 },
+	{ "^", "︿", "⑥", "➅", "Ⅵ", "﹀", "︽", "︾", 0 },
+	{ "&", "＆", "⑦", "➆", "Ⅶ", "﹠", 0 },
+	{ "*", "＊", "⑧", "➇", "Ⅷ", "×", "※", "╳", "﹡", "☯","☆", "★", 0 },
+	{ "(", "（", "⑨", "➈", "Ⅸ", 0 },
+	{ ")", "）", "⑩", "➉", "Ⅹ", 0 },
+	{ "_", "＿", "…", "‥", "←", "→", "﹍", "﹉", "ˍ", "￣", "–", "—", "¯", "﹊", "﹎", "﹏", "﹣", "－", 0 },
+	{ "+", "＋", "±", "﹢", "✙", "✚", "✛", "✜", "✝", "✞", "✟", 0 },
+	{ "=", "＝", "≒", "≠", "≡", "≦", "≧", "﹦", 0},
+	{ "`", "』", "『", "′", "‵", 0 },
+	{ "~", "～", 0 },
+	{ ":", "：", "；", "︰", "﹕", 0 },
+	{ "\"", "；", 0 },
+	{ "\'", "、", "…", "‥", 0 },
+	{ "\\", "＼", "↖", "↘", "﹨", 0 },
+	{"-","－","＿","￣","¯","ˍ","–","—","‥","…","←","→","╴","﹉","﹊","﹍","﹎","﹏","﹣", 0 },
+	{"/","／","÷","↗","↙","∕", 0 },
+	{ "|","↑", "↓", "∣", "∥", "︱", "︳", "︴" ,0 },
+	{ "A", "Ⓐ", "Å","Α", "α", "├", "╠", "╟", "╞", 0 },
+	{ "B", "Ⓑ", "Β", "β","∵", 0 },
+	{ "C", "Ⓒ", "Χ", "χ", "┘", "╯", "╝", "╜", "╛","㏄","℃","㎝","♣","♧","©" ,0 },
+	{ "D", "Ⓓ", "Δ", "δ", "◇", "◆", "┤", "╣", "╢", "╡","♦", 0 },
+	{ "E", "Ⓔ", "Ε", "ε", "┐", "╮", "╗", "╓", "╕", 0 },
+	{ "F", "Ⓕ", "Φ", "ψ", "│", "║", "℉","♀", 0 },
+	{ "G", "Ⓖ", "Γ", "γ", 0 },
+	{ "H", "Ⓗ", "Η", "η","♥","♡", 0 },
+	{ "I", "Ⓘ", "Ι", "ι", 0 },
+	{ "J", "Ⓙ", "φ", 0 },
+	{ "K", "Ⓚ", "Κ", "κ","㎞", "㏎", 0 },
+	{ "L", "Ⓛ", "Λ", "λ","㏒", "㏑", 0 },
+	{ "M", "Ⓜ", "Μ", "μ","♂","ℓ","㎎", "㏕", "㎜","㎡", 0 },
+	{ "N", "Ⓝ", "Ν", "ν","№", 0 },
+	{ "O", "Ⓞ", "Ο", "ο", 0 },
+	{ "P", "Ⓟ", "Π", "π", 0 },
+	{ "Q", "Ⓠ", "Θ", "θ","Д","┌", "╭", "╔", "╓", "╒","۞", 0 },
+	{ "R", "Ⓡ", "Ρ", "ρ", "─", "═" ,"®" , 0 },
+	{ "S", "Ⓢ", "Σ", "σ","∴","□","■","┼", "╬", "╪", "╫","∫","§","♠","♤", 0 },
+	{ "T", "Ⓣ", "Τ", "τ","θ","△","▲","▽","▼","™","⊿", "™", 0 },
+	{ "U", "Ⓤ", "Υ", "υ","μ","∪", "∩", 0 },
+	{ "V", "Ⓥ", 0 },
+	{ "W", "Ⓦ", "Ω", "ω", "┬", "╦", "╤", "╥", 0 },
+	{ "X", "Ⓧ", "Ξ", "ξ", "┴", "╩", "╧", "╨", 0 },
+	{ "Y", "Ⓨ", "Ψ", 0 },
+	{ "Z", "Ⓩ", "Ζ", "ζ", "└", "╰", "╚", "╙", "╘", 0 },
+};
+
+int FindSymbolKey( const char* symbol )
+{
+	int i;
+	char** buf;
+	for( i = 0; i < sizeof(symbol_buf) / sizeof(symbol_buf[0]); ++i ) {
+		for( buf = symbol_buf[i]; *buf; ++buf )	{
+			if( 0 == strcmp( *buf, symbol ) )
+				return *symbol_buf[i][0];
+		}
+	}
+	return 0;
+}
 
 int OpenSymbolChoice( ChewingData *pgdata )
 {
-	static char *symbol_buf[][50] = {
-		//{ "1", "√", "", "", "", "", "", "", 0},
-		{"0","ø", 0},
-		{ "[", "「", "『", "《", "〈", "【", "〔", 0 },
-		{ "]", "」", "』", "》", "〉", "】", "〕", 0 },
-		{ "{", "｛", 0 },
-		{ "}", "｝", 0 },
-		{ "<", "，", "←", 0 },
-		{ ">", "。", "→", "．", 0 },
-		{ "?", "？","¿", 0 },
-		{ "!", "！", "①", "➀", "Ⅰ","¡", 0 },
-		{ "@", "＠", "②", "➁", "Ⅱ", "⊕", "⊙", "㊣", "﹫", 0 },
-		{ "#", "＃", "③", "➂", "Ⅲ", "﹟", 0 },
-		{ "$", "＄", "④", "➃", "Ⅳ", "€", "﹩", "￠", "∮","￡", "￥", 0 },
-		{ "%", "％", "⑤", "➄", "Ⅴ", 0 },
-		{ "^", "︿", "⑥", "➅", "Ⅵ", "﹀", "︽", "︾", 0 },
-		{ "&", "＆", "⑦", "➆", "Ⅶ", "﹠", 0 },
-		{ "*", "＊", "⑧", "➇", "Ⅷ", "×", "※", "╳", "﹡", "☯","☆", "★", 0 },
-		{ "(", "（", "⑨", "➈", "Ⅸ", 0 },
-		{ ")", "）", "⑩", "➉", "Ⅹ", 0 },
-		{ "_", "＿", "…", "‥", "←", "→", "﹍", "﹉", "ˍ", "￣", "–", "—", "¯", "﹊", "﹎", "﹏", "﹣", "－", 0 },
-		{ "+", "＋", "±", "﹢", "✙", "✚", "✛", "✜", "✝", "✞", "✟", 0 },
-		{ "=", "＝", "≒", "≠", "≡", "≦", "≧", "﹦", 0},
-		{ "`", "』", "『", "′", "‵", 0 },
-		{ "~", "～", 0 },
-		{ ":", "：", "；", "︰", "﹕", 0 },
-		{ "\"", "；", 0 },
-		{ "\'", "、", "…", "‥", 0 },
-		{ "\\", "＼", "↖", "↘", "﹨", 0 },
-		{"-","－","＿","￣","¯","ˍ","–","—","‥","…","←","→","╴","﹉","﹊","﹍","﹎","﹏","﹣", 0 },
-		{"/","／","÷","↗","↙","∕", 0 },
-		{ "|","↑", "↓", "∣", "∥", "︱", "︳", "︴" ,0 },
-		{ "A", "Ⓐ", "Å","Α", "α", "├", "╠", "╟", "╞", 0 },
-		{ "B", "Ⓑ", "Β", "β","∵", 0 },
-		{ "C", "Ⓒ", "Χ", "χ", "┘", "╯", "╝", "╜", "╛","㏄","℃","㎝","♣","♧","©" ,0 },
-		{ "D", "Ⓓ", "Δ", "δ", "◇", "◆", "┤", "╣", "╢", "╡","♦", 0 },
-		{ "E", "Ⓔ", "Ε", "ε", "┐", "╮", "╗", "╓", "╕", 0 },
-		{ "F", "Ⓕ", "Φ", "ψ", "│", "║", "℉","♀", 0 },
-		{ "G", "Ⓖ", "Γ", "γ", 0 },
-		{ "H", "Ⓗ", "Η", "η","♥","♡", 0 },
-		{ "I", "Ⓘ", "Ι", "ι", 0 },
-		{ "J", "Ⓙ", "φ", 0 },
-		{ "K", "Ⓚ", "Κ", "κ","㎞", "㏎", 0 },
-		{ "L", "Ⓛ", "Λ", "λ","㏒", "㏑", 0 },
-		{ "M", "Ⓜ", "Μ", "μ","♂","ℓ","㎎", "㏕", "㎜","㎡", 0 },
-		{ "N", "Ⓝ", "Ν", "ν","№", 0 },
-		{ "O", "Ⓞ", "Ο", "ο", 0 },
-		{ "P", "Ⓟ", "Π", "π", 0 },
-		{ "Q", "Ⓠ", "Θ", "θ","Д","┌", "╭", "╔", "╓", "╒","۞", 0 },
-		{ "R", "Ⓡ", "Ρ", "ρ", "─", "═" ,"®" , 0 },
-		{ "S", "Ⓢ", "Σ", "σ","∴","□","■","┼", "╬", "╪", "╫","∫","§","♠","♤", 0 },
-		{ "T", "Ⓣ", "Τ", "τ","θ","△","▲","▽","▼","™","⊿", "™", 0 },
-		{ "U", "Ⓤ", "Υ", "υ","μ","∪", "∩", 0 },
-		{ "V", "Ⓥ", 0 },
-		{ "W", "Ⓦ", "Ω", "ω", "┬", "╦", "╤", "╥", 0 },
-		{ "X", "Ⓧ", "Ξ", "ξ", "┴", "╩", "╧", "╨", 0 },
-		{ "Y", "Ⓨ", "Ψ", 0 },
-		{ "Z", "Ⓩ", "Ζ", "ζ", "└", "╰", "╚", "╙", "╘", 0 },
-	};
-	int i, symbol_buf_len = 56;
+	int i, symbol_buf_len = sizeof(symbol_buf) / sizeof(symbol_buf[0]);
 	char **pBuf;
 	ChoiceInfo *pci = &( pgdata->choiceInfo );
 	pci->oldCursor = pgdata->cursor;
@@ -944,7 +993,6 @@ int OpenSymbolChoice( ChewingData *pgdata )
 		pgdata->bSelect = 1;
 		HaninSymbolInput( pci, &( pgdata->availInfo ), 
 			pgdata->phoneSeq, pgdata->config.selectAreaLen );
-		pci->isSymbol = 2;
 		return 0;
 	}
 	for( i = 0; i < symbol_buf_len; i++ ) {
@@ -967,7 +1015,7 @@ int OpenSymbolChoice( ChewingData *pgdata )
     if(pci->nChoicePerPage > MAX_SELKEY) pci->nChoicePerPage = MAX_SELKEY ;
     pci->nPage = CEIL_DIV(pci->nTotalChoice, pci->nChoicePerPage) ;
     pci->pageNo = 0 ;
-    pci->isSymbol = 2;
+    pci->isSymbol = 3;
 
 	pgdata->bSelect = 1;
 	pgdata->availInfo.nAvail = 1;
@@ -976,3 +1024,73 @@ int OpenSymbolChoice( ChewingData *pgdata )
 	pgdata->availInfo.avail[0].len = 1;	
 	return 0;
 }
+
+int InitSymbolTable( const char *prefix )
+{
+#ifndef	WIN32
+	const char DIRPATH_SEP_FILENAME[] = "%s/%s";
+#else
+	const char DIRPATH_SEP_FILENAME[] = "%s\\%s";
+#endif
+	FILE *file;
+	char filename[ 100 ];
+	char line[512];
+	char *category;
+	char *symbols, *symbol;
+	SymbolEntry* tmp_tab[ 100 ];
+	int len = 0, i;
+
+	n_symbol_entry = 0;
+	symbol_table = NULL;
+
+	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, SYMBOL_TABLE_FILE );
+	file = fopen( filename, "r" );
+
+	if( ! file )
+		return 0;
+
+	while( fgets( line, sizeof(line)/sizeof(char), file ) )
+	{
+		if( n_symbol_entry >= (sizeof(tmp_tab)/sizeof(SymbolEntry*)) )
+			break;
+		category = strtok( line, "=\r\n" );
+		if( category ) {
+			symbols = strtok( NULL, "\r\n" );
+			if( symbols ) {
+				len = ueStrLen(symbols);
+				tmp_tab[n_symbol_entry] = (SymbolEntry*)malloc( sizeof(SymbolEntry) + (len-1)* (MAX_UTF8_SIZE + 1) );
+				tmp_tab[n_symbol_entry]->nSymbols = len;
+				symbol = symbols;
+				for( i = 0; i < len; ++i )
+				{
+					symbol += ueBytesFromChar( symbol[0] );
+					ueStrNCpy( tmp_tab[n_symbol_entry]->symbols[i], symbol, 1, 1 );
+				}
+			}
+			else{
+				tmp_tab[n_symbol_entry] = (SymbolEntry*)calloc( 1, sizeof(SymbolEntry) - ( MAX_UTF8_SIZE + 1) );
+				tmp_tab[n_symbol_entry]->nSymbols = 0;
+			}
+			ueStrNCpy( tmp_tab[n_symbol_entry]->category, category, MAX_PHRASE_LEN, 1 );
+			++n_symbol_entry;
+		}
+	}
+	symbol_table = (SymbolEntry*)calloc( n_symbol_entry, sizeof(SymbolEntry*) );
+	memcpy( symbol_table, tmp_tab, n_symbol_entry * sizeof(SymbolEntry*) );
+	fclose( file );
+	return 1;
+}
+
+void TerminateSymbolTable()
+{
+	int i;
+	if( symbol_table )
+	{
+		for( i = 0; i < n_symbol_entry; ++i )
+			free(symbol_table[i]);
+		free(symbol_table);
+		n_symbol_entry = 0;
+		symbol_table = NULL;
+	}
+}
+

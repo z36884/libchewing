@@ -270,7 +270,7 @@ int ChoiceEndChoice( ChewingData *pgdata )
 	pgdata->choiceInfo.nTotalChoice = 0;
 	pgdata->choiceInfo.nPage = 0;
 
-	if ( pgdata->choiceInfo.isSymbol != 1 ) {
+	if ( pgdata->choiceInfo.isSymbol != 0 ) {
 		/* return to the old cursor & chiSymbolCursor position */
 		pgdata->cursor = pgdata->choiceInfo.oldCursor;
 		pgdata->chiSymbolCursor = pgdata->choiceInfo.oldChiSymbolCursor;

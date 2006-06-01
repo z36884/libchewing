@@ -23,6 +23,7 @@
 #define PH_INDEX_FILE		"ph_index.dat"
 #define CHAR_FILE		"us_freq.dat"
 #define CHAR_INDEX_FILE		"ch_index.dat"
+#define SYMBOL_TABLE_FILE	"symbols.dat"
 
 #define IS_USER_PHRASE 1
 #define IS_DICT_PHRASE 0
@@ -120,12 +121,33 @@ typedef struct {
 	/** @brief number of choices per page. */
 	int nChoicePerPage;
 	/** @brief store possible phrases for being chosen. */
-	char totalChoiceStr[ MAX_CHOICE ][ MAX_PHRASE_LEN * 3 + 1 ];
+	char totalChoiceStr[ MAX_CHOICE ][ MAX_PHRASE_LEN * MAX_UTF8_SIZE + 1 ];
 	/** @brief number of phrases to choose. */
 	int nTotalChoice;
 	int oldCursor, oldChiSymbolCursor;
 	int isSymbol;
 } ChoiceInfo;
+
+/** @brief entry of symbol table */
+typedef struct {
+	/*
+		nSymnols is total number of symbols in this category.
+		If nSymbols = 0, category is treat as a symbol, 
+		which is a zero-terminated utf-8 string.
+		In that case, symbols[] is unused and isn't allocated at all.
+	*/
+	int nSymbols;
+
+	/* Category name of these symbols */
+	char category[MAX_PHRASE_LEN * MAX_UTF8_SIZE + 1];
+
+	/*
+		Symbols in this category.
+		This is an char[] array of variable length.
+		When nSymbols = 0, this array is not allocated.
+	*/
+	char symbols[1][ MAX_UTF8_SIZE + 1 ];
+}SymbolEntry;
 
 /** @brief use "asdfjkl789" as selection key */
 #define HSU_SELKEY_TYPE1 1
