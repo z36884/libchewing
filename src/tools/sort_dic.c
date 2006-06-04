@@ -82,12 +82,29 @@ void SetNewline2Zero( long index )
 void DataStripSpace( long index )
 {
 	long i, k = 0;
-	char old[ MAXLEN ], last = '\0';
-
+	char old[ MAXLEN ];
+	char last = ' ';
+	/*  CHECK-HERE: 
+		char last = '\0';
+		hialan: Default should be ' ' ?
+				If the first charactor of line in tsi.src is ' ',
+				then it should be ignore?
+	*/
 	strcpy( old, data[ index ].str );
 	for ( i = 0; old[ i ]; i++ ) {
 		if ( old[ i ] == ' ' && last == ' ' )
 			continue;
+		//
+		// ADD patch from pofeng@gmail.com
+		//		'#' comment in tsi.src
+		//
+		// Ex: abcde # comment after data
+		//
+		if ( old[ i ] == '#')
+		{
+			data[ index ].str[ k++ ] = '\n';
+			break;
+		}
 		data[ index ].str[ k++ ] = old[ i ];
 		last = old[ i ];
 	}
@@ -152,10 +169,19 @@ int main( int argc, char *argv[] )
 	}
 
 	while ( fgets( data[ nData ].str, MAXLEN, infile ) ) {
-		// Add '#' comment for tsi.src
-		if( data[ nData ].str[0] == '#')
-			continue;
 		DataStripSpace( nData );
+
+		//
+		// Add '#' comment for tsi.src
+		// 
+		// EX: # here is comment with first charactor '#'
+		//        # comment after some space
+		//
+		if( data[ nData ].str[0] == '\n')
+			continue;
+
+printf("%s", data[nData].str);
+
 		DataSetNum( nData );
 		SetNewline2Zero( nData );
 		nData++;
