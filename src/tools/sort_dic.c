@@ -88,12 +88,6 @@ void DataStripSpace( long index )
 	for ( i = 0; old[ i ]; i++ ) {
 		if ( old[ i ] == ' ' && last == ' ' )
 			continue;
-
-		/* 20060604 : pofeng@gmail.com : to add '#' comment in tsi.src */
-		if (old[i]=='#'){
-			data[ index ].str[ k++ ]='\0';
-			return;
-		}
 		data[ index ].str[ k++ ] = old[ i ];
 		last = old[ i ];
 	}
@@ -158,6 +152,9 @@ int main( int argc, char *argv[] )
 	}
 
 	while ( fgets( data[ nData ].str, MAXLEN, infile ) ) {
+		// Add '#' comment for tsi.src
+		if( data[ nData ].str[0] == '#')
+			continue;
 		DataStripSpace( nData );
 		DataSetNum( nData );
 		SetNewline2Zero( nData );
@@ -183,6 +180,8 @@ int main( int argc, char *argv[] )
 		fprintf( treedata, "0\n" );
 
 	} 
+
+	fclose( infile );
 	fclose( ph_index );
 	fclose( dictfile );
 	fclose( treedata );
