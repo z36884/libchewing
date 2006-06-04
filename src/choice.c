@@ -130,7 +130,7 @@ int ChoiceTheSame( ChoiceInfo *pci, char *str, int len )
 #include <assert.h>
 void SetChoiceInfo(
 		ChoiceInfo *pci,AvailInfo *pai, uint16 *phoneSeq, int cursor,
-		int selectAreaLen )
+		int candPerPage )
 {
 	Word tempWord;
 	Phrase tempPhrase;
@@ -198,7 +198,7 @@ void SetChoiceInfo(
 	}
 
 	/* magic number */
-	pci->nChoicePerPage = ( selectAreaLen - 5 ) / ( len * 2 + 3 );
+	pci->nChoicePerPage = candPerPage;
 	if ( pci->nChoicePerPage > MAX_SELKEY )
 		pci->nChoicePerPage = MAX_SELKEY;
 	pci->nPage = CEIL_DIV( pci->nTotalChoice, pci->nChoicePerPage );
@@ -232,7 +232,7 @@ int ChoiceFirstAvail( ChewingData *pgdata )
 		&( pgdata->availInfo ), 
 		pgdata->phoneSeq, 
 		pgdata->cursor, 
-		pgdata->config.selectAreaLen );
+		pgdata->config.candPerPage );
 	return 0;
 }
 
@@ -246,7 +246,7 @@ int ChoicePrevAvail( ChewingData *pgdata )
 		&( pgdata->availInfo ), 
 		pgdata->phoneSeq, 
 		pgdata->cursor,
-		pgdata->config.selectAreaLen );
+		pgdata->config.candPerPage );
 	return 0;
 }
 
@@ -260,7 +260,7 @@ int ChoiceNextAvail( ChewingData *pgdata )
 		&( pgdata->choiceInfo ), 
 		&( pgdata->availInfo ), 
 		pgdata->phoneSeq,pgdata->cursor,
-		pgdata->config.selectAreaLen );
+		pgdata->config.candPerPage );
 	return 0;
 }
 
@@ -270,7 +270,8 @@ int ChoiceEndChoice( ChewingData *pgdata )
 	pgdata->choiceInfo.nTotalChoice = 0;
 	pgdata->choiceInfo.nPage = 0;
 
-	if ( pgdata->choiceInfo.isSymbol != 0 ) {
+	if ( pgdata->choiceInfo.isSymbol != 1 ||
+		pgdata->choiceInfo.isSymbol != 2 ) {
 		/* return to the old cursor & chiSymbolCursor position */
 		pgdata->cursor = pgdata->choiceInfo.oldCursor;
 		pgdata->chiSymbolCursor = pgdata->choiceInfo.oldChiSymbolCursor;

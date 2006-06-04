@@ -31,7 +31,7 @@ int SpecialSymbolInput( int key, ChewingData *pgdata );
 int FullShapeSymbolInput( int key, ChewingData *pgdata );
 int SymbolInput( int key, ChewingData *pgdata );
 int SymbolChoice( ChewingData *pgdata, int sel_i );
-int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],  int selectAreaLen);
+int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],  int candPerPage);
 int WriteChiSymbolToBuf( wch_t csBuf[], int csBufLen, ChewingData *pgdata );
 int ReleaseChiSymbolBuf( ChewingData *pgdata, ChewingOutput *);
 int AddChi( uint16 phone, ChewingData *pgdata );

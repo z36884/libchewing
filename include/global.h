@@ -155,7 +155,8 @@ typedef struct {
 #define HSU_SELKEY_TYPE2 2
 
 typedef struct {
-	int selectAreaLen;
+	//int selectAreaLen;
+	int candPerPage;
 	int maxChiSymbolLen;
 	int selKey[ MAX_SELKEY ];
 	int bAddPhraseForward;

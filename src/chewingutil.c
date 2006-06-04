@@ -91,7 +91,7 @@ int ChewingIsEntering( ChewingData *pgdata )
 
 #define CEIL_DIV(a,b) ((a+b-1)/b)
 
-int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	int selectAreaLen) {
+int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	int candPerPage) {
 	int i;
 
 	if( !symbol_table )	/* No available symbol table */
@@ -106,7 +106,7 @@ int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	i
     pai->avail[0].id = -1;  
     pai->nAvail = 1;
     pai->currentAvail = 0;
-    pci->nChoicePerPage = (selectAreaLen - 5) / ( 2 + 3) ;
+    pci->nChoicePerPage = candPerPage;
     if(pci->nChoicePerPage > MAX_SELKEY) pci->nChoicePerPage = MAX_SELKEY ;
     pci->nPage = CEIL_DIV(pci->nTotalChoice, pci->nChoicePerPage) ;
     pci->pageNo = 0 ;
@@ -251,7 +251,7 @@ int SymbolChoice(ChewingData *pgdata, int sel_i){
 		pai->avail[0].id = -1;  
 		pai->nAvail = 1;
 		pai->currentAvail = 0;
-		pci->nChoicePerPage = (pgdata->config.selectAreaLen - 5) / ( 2 + 3) ;
+		pci->nChoicePerPage = pgdata->config.candPerPage;
 		if(pci->nChoicePerPage > MAX_SELKEY) pci->nChoicePerPage = MAX_SELKEY ;
 		pci->nPage = CEIL_DIV(pci->nTotalChoice, pci->nChoicePerPage) ;
 		pci->pageNo = 0 ;
@@ -992,7 +992,7 @@ int OpenSymbolChoice( ChewingData *pgdata )
 	if( pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor ] == '1' ) {
 		pgdata->bSelect = 1;
 		HaninSymbolInput( pci, &( pgdata->availInfo ), 
-			pgdata->phoneSeq, pgdata->config.selectAreaLen );
+			pgdata->phoneSeq, pgdata->config.candPerPage );
 		return 0;
 	}
 	for( i = 0; i < symbol_buf_len; i++ ) {
@@ -1011,7 +1011,7 @@ int OpenSymbolChoice( ChewingData *pgdata )
 		pci->nTotalChoice++; 
     }
 	
-	pci->nChoicePerPage = (pgdata->config.selectAreaLen - 5) / ( 2 + 3) ;
+	pci->nChoicePerPage = pgdata->config.candPerPage;
     if(pci->nChoicePerPage > MAX_SELKEY) pci->nChoicePerPage = MAX_SELKEY ;
     pci->nPage = CEIL_DIV(pci->nTotalChoice, pci->nChoicePerPage) ;
     pci->pageNo = 0 ;
