@@ -88,6 +88,12 @@ void DataStripSpace( long index )
 	for ( i = 0; old[ i ]; i++ ) {
 		if ( old[ i ] == ' ' && last == ' ' )
 			continue;
+
+		/* 20060604 : pofeng@gmail.com : to add '#' comment in tsi.src */
+		if (old[i]=='#'){
+			data[ index ].str[ k++ ]='\0';
+			return;
+		}
 		data[ index ].str[ k++ ] = old[ i ];
 		last = old[ i ];
 	}
