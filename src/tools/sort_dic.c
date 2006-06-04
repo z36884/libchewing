@@ -92,6 +92,11 @@ void DataStripSpace( long index )
 	*/
 	strcpy( old, data[ index ].str );
 	for ( i = 0; old[ i ]; i++ ) {
+
+		// trans '\t' to ' ' , easy for process.
+		if( old[ i ] == '\t')
+			old[ i ] = ' ';
+
 		if ( old[ i ] == ' ' && last == ' ' )
 			continue;
 		//
@@ -179,8 +184,6 @@ int main( int argc, char *argv[] )
 		//
 		if( data[ nData ].str[0] == '\n')
 			continue;
-
-printf("%s", data[nData].str);
 
 		DataSetNum( nData );
 		SetNewline2Zero( nData );
