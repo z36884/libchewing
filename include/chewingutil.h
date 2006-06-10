@@ -56,5 +56,6 @@ int OpenSymbolChoice( ChewingData *pgdata );
 int InitSymbolTable( const char *prefix );
 void TerminateSymbolTable();
 
+int FindSymbolKey( const char* symbol );
 #endif
 

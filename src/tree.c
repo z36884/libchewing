@@ -24,8 +24,6 @@
 #include "chewing-utf8-util.h"
 #ifdef WIN32
 	#include <windows.h>
-	#include <io.h>
-	#include <fcntl.h>
 #else
 	#include <unistd.h>
 #endif
@@ -119,25 +117,44 @@ void ReadTree( const char *prefix )
 	int i;
 	FILE *infile;
 #else
-	int infile;
-	struct stat file_stat;
+	#ifdef WIN32
+		HANDLE hInFile;  	 	 
+        DWORD read_len; 		 
+        DWORD file_size;
+	#else
+		int infile;
+		struct stat file_stat;
+	#endif
 #endif
 
 	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, PHONE_TREE_FILE );
 
 #ifdef	USE_BINARY_DAT
-	infile = open( filename, O_RDONLY );
+	#ifdef WIN32 /* Win32 */
+		hInFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
 
-	if( infile == -1  )
+		if( hInFile == INVALID_HANDLE_VALUE )  	 	 
 			return;
 
-	fstat( infile, &file_stat );
+		tree_size = file_size = GetFileSize( hInFile, NULL);  	 	 
+		if( tree = malloc(file_size) ) 		 
+			ReadFile( hInFile, tree, file_size, &read_len, NULL);
 
-	tree_size = (long)file_stat.st_size;
-	if(	tree = malloc(tree_size) )
-		read( infile, tree, tree_size );
+		CloseHandle(hInFile);
+	#else
+		infile = open( filename, O_RDONLY );
 
-	close( infile );
+		if( infile == -1  )
+				return;
+
+		fstat( infile, &file_stat );
+
+		tree_size = (long)file_stat.st_size;
+		if(tree = malloc(tree_size) )
+			read( infile, tree, tree_size );
+
+		close( infile );
+	#endif /* Win32 */
 	addTerminateService( TerminateTree );	/* Free allocated memory */
 #else
 	infile = fopen( filename, "r" );

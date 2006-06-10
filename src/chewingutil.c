@@ -1075,7 +1075,7 @@ int InitSymbolTable( const char *prefix )
 			++n_symbol_entry;
 		}
 	}
-	symbol_table = (SymbolEntry*)calloc( n_symbol_entry, sizeof(SymbolEntry*) );
+	symbol_table = (SymbolEntry**)calloc( n_symbol_entry, sizeof(SymbolEntry*) );
 	memcpy( symbol_table, tmp_tab, n_symbol_entry * sizeof(SymbolEntry*) );
 	fclose( file );
 	return 1;

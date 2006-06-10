@@ -18,8 +18,6 @@
 
 #ifdef WIN32
 	#include <windows.h>
-	#include <io.h>
-	#include <fcntl.h>
 #else
 	#include <unistd.h>
 #endif
@@ -82,8 +80,14 @@ int InitDict( const char *prefix )
 	FILE* indexfile;
 	int i;
 #else	/* Use binary data format */
-	int indexfile;
-	struct stat file_stat;
+	#ifdef WIN32
+		HANDLE hInFile;  	 	 
+        DWORD read_len; 		 
+        DWORD file_size;
+	#else
+		int indexfile;
+		struct stat file_stat;
+	#endif
 #endif	/* USE_BINARY_DAT */
 
 	char filename[ 100 ];
@@ -94,16 +98,29 @@ int InitDict( const char *prefix )
 	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, PH_INDEX_FILE );
 
 #ifdef	USE_BINARY_DAT
-	indexfile = open( filename, O_RDONLY);
+	#ifdef WIN32 /* Win32 */
+		hInFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
 
-	if( indexfile == -1 )
-		return 0;
-	fstat( indexfile, &file_stat );
+		if( hInFile == INVALID_HANDLE_VALUE )  	 	 
+			return 0; 		 
+  		 
+		file_size = GetFileSize( hInFile, NULL); 		 
+		if( begin = (int*)malloc(file_size + sizeof(int)) ) 		 
+			ReadFile( hInFile, begin, file_size, &read_len, NULL); 		 
+  		 
+		CloseHandle(hInFile);
+	#else
+		indexfile = open( filename, O_RDONLY);
 
-	if(	begin = (int*)malloc( (size_t)file_stat.st_size + sizeof(int)) )
-		read( indexfile, begin, (size_t)file_stat.st_size );
+		if( indexfile == -1 )
+			return 0;
+		fstat( indexfile, &file_stat );
 
-	close( indexfile );
+		if(	begin = (int*)malloc( (size_t)file_stat.st_size + sizeof(int)) )
+			read( indexfile, begin, (size_t)file_stat.st_size );
+
+		close( indexfile );
+	#endif /* Win32 */
 #else
 	indexfile = fopen( filename, "r" );
 	assert( dictfile && indexfile );

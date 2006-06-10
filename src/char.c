@@ -26,8 +26,6 @@
 
 #ifdef WIN32
 	#include <windows.h>
-	#include <io.h>
-	#include <fcntl.h>
 #else
 	#include <unistd.h>
 #endif
@@ -96,8 +94,14 @@ int InitChar( const char *prefix )
 	FILE* indexfile;
 #else	/* Use binary data format */
 	long file_size;
-	int indexfile;
-	struct stat file_stat;
+
+	#ifdef WIN32
+		HANDLE hIndexFile;  	 	 
+        DWORD read_len;
+	#else
+		int indexfile;
+		struct stat file_stat;
+	#endif
 #endif	/* USE_BINARY_DAT */
 
 	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, CHAR_FILE );
@@ -106,6 +110,26 @@ int InitChar( const char *prefix )
 	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, CHAR_INDEX_FILE );
 
 #ifdef	USE_BINARY_DAT
+	#ifdef WIN32
+		hIndexFile = CreateFile( filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+		if ( ! dictfile || hIndexFile == INVALID_HANDLE_VALUE )  	 	 
+			return 0; 		 
+		file_size = GetFileSize( hIndexFile, NULL); 		 
+		phone_num = file_size / (sizeof(int) + sizeof(uint16)); 		 
+		phone_data_buf = malloc( file_size ); 		 
+  		 
+		if( !phone_data_buf || 		 
+			! ReadFile( hIndexFile, phone_data_buf, file_size, &read_len, NULL) ) 		 
+		{ 		 
+			CloseHandle(hIndexFile); 		 
+			return 0; 		 
+		} 		 
+  		 
+		begin = ((int*)phone_data_buf); 		 
+		arrPhone = (uint16*)(begin + phone_num); 		 
+  		 
+		CloseHandle(hIndexFile);
+	#else
 		indexfile = open( filename, O_RDONLY );
 		if ( ! dictfile || -1 == indexfile )
 			return 0;
@@ -126,6 +150,7 @@ int InitChar( const char *prefix )
 		arrPhone = (uint16*)(begin + phone_num);
 
 		close(indexfile);
+	#endif /* Win32 */
 #else	/*	Use plain text data file	*/
 	indexfile = fopen( filename, "r" );
 	if ( ! dictfile || ! indexfile )
