@@ -29,6 +29,7 @@ int SemiSymbolInput(int key, ChewingData *pgdata);
 int SpecialEtenSymbolInput( int key, ChewingData *pgdata );
 int SpecialSymbolInput( int key, ChewingData *pgdata );
 int FullShapeSymbolInput( int key, ChewingData *pgdata );
+int EasySymbolInput( int key, ChewingData *pgdata );
 int SymbolInput( int key, ChewingData *pgdata );
 int SymbolChoice( ChewingData *pgdata, int sel_i );
 int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],  int candPerPage);
@@ -55,6 +56,9 @@ int OpenSymbolChoice( ChewingData *pgdata );
 
 int InitSymbolTable( const char *prefix );
 void TerminateSymbolTable();
+
+int InitEasySymbolInput(const char *prefix);
+void TerminateEasySymbolTable();
 
 int FindSymbolKey( const char* symbol );
 #endif

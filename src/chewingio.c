@@ -910,6 +910,11 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 	/* editing */
 	else {
 		if ( pgdata->bChiSym == CHINESE_MODE ) {
+			if ( pgdata->bEasySymbolInput!=0 ) {
+				EasySymbolInput(key, pgdata);
+				keystrokeRtn = KEYSTROKE_ABSORB;
+				goto End_OnKeyDefault;
+			}
 			/* open symbol table */
 			if( key == '`' ) {
 				pgdata->bSelect = 1;

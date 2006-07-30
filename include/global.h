@@ -24,6 +24,7 @@
 #define CHAR_FILE		"us_freq.dat"
 #define CHAR_INDEX_FILE		"ch_index.dat"
 #define SYMBOL_TABLE_FILE	"symbols.dat"
+#define SOFTKBD_TABLE_FILE	"swkb.dat"
 
 #define IS_USER_PHRASE 1
 #define IS_DICT_PHRASE 0
@@ -197,7 +198,7 @@ typedef struct {
 	int bArrBrkpt[ MAX_PHONE_SEQ_LEN + 1 ];
 	int bSymbolArrBrkpt[ MAX_PHONE_SEQ_LEN + 1 ];
 	/* "bArrBrkpt[10]=True" means "it breaks between 9 and 10" */
-	int bChiSym, bSelect, bCaseChange, bFirstKey, bFullShape, bAutoShiftCur;
+	int bChiSym, bSelect, bCaseChange, bFirstKey, bFullShape, bAutoShiftCur, bEasySymbolInput;
 	/* Symbol Key Buf */
 	char symbolKeyBuf[ MAX_PHONE_SEQ_LEN ];
 } ChewingData;

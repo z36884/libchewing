@@ -32,6 +32,15 @@ static void ShiftInterval( ChewingOutput *pgo, ChewingData *pgdata );
 static SymbolEntry** symbol_table = NULL;
 static int n_symbol_entry = 0;
 
+static char g_easy_symbol_key[] = {
+		'0','1','2','3','4','5','6','7','8','9',
+		'A','B','C','D','E','F','G','H','I','J',
+		'K','L','M','N','O','P','Q','R','S','T',
+		'U','V','W','X','Y','Z'
+	};
+static char *g_easy_symbol_value[sizeof(g_easy_symbol_key)] = { NULL };
+
+
 void SetUpdatePhraseMsg( ChewingData *pgdata, char *addWordSeq, int len, int state )
 {
 	char *insert = "加入－", *modify = "已有－";
@@ -122,7 +131,7 @@ static int InternalSpecialSymbol(
         int kbtype;
 
 	for ( i = 0; i < nSpecial; i++ ) {
-		if ( key == keybuf[ i ] ) {
+		if ( key == keybuf[ i ] && NULL!=chibuf[i] ) {
 			rtn = ZUIN_ABSORB;
 			memmove( 
 				&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
@@ -197,6 +206,19 @@ int FullShapeSymbolInput( int key, ChewingData *pgdata )
 	};
 	static int nSpecial = sizeof(keybuf)/sizeof(char);
 	rtn = InternalSpecialSymbol( key, pgdata, nSpecial, keybuf, chibuf );
+	if( rtn == ZUIN_IGNORE )
+		rtn = SpecialSymbolInput( key, pgdata );
+	return (rtn == ZUIN_IGNORE ? SYMBOL_KEY_ERROR : SYMBOL_KEY_OK);
+}
+
+int EasySymbolInput(int key, ChewingData *pgdata)
+{
+	int rtn;
+	int nSpecial = sizeof(g_easy_symbol_key)/sizeof(char);
+
+	rtn = InternalSpecialSymbol( 
+		key, pgdata, nSpecial, 
+		g_easy_symbol_key, g_easy_symbol_value);
 	if( rtn == ZUIN_IGNORE )
 		rtn = SpecialSymbolInput( key, pgdata );
 	return (rtn == ZUIN_IGNORE ? SYMBOL_KEY_ERROR : SYMBOL_KEY_OK);
@@ -1091,6 +1113,95 @@ void TerminateSymbolTable()
 		free(symbol_table);
 		n_symbol_entry = 0;
 		symbol_table = NULL;
+	}
+}
+
+static int FindEasySymbolIndex(char ch)
+{
+	int lo, hi, mid;
+
+	lo = 0;
+	hi = sizeof(g_easy_symbol_key)-1;
+	while ( lo<=hi ) {
+		mid = (hi-lo)/2 + lo;
+		if ( ch>g_easy_symbol_key[mid] ) {
+			lo = mid+1;
+			continue;
+		}
+		else if ( ch<g_easy_symbol_key[mid] ) {
+			hi = mid-1;
+			continue;
+		}
+		return	mid;
+	}
+	return	-1;
+}
+
+int InitEasySymbolInput( const char *prefix )
+{
+#ifndef	WIN32
+	const char DIRPATH_SEP_FILENAME[] = "%s/%s";
+#else
+	const char DIRPATH_SEP_FILENAME[] = "%s\\%s";
+#endif
+	FILE *file;
+	char filename[ 512 ];
+	char line[512];
+	char *symbol;
+	int len = 0, i, index;
+
+
+	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, SOFTKBD_TABLE_FILE );
+	file = fopen( filename, "r" );
+
+	if( ! file )
+		return 0;
+
+	line[0] = '\0';
+	while( fgets( line, sizeof(line)/sizeof(char), file ) )
+	{
+		if ( '\0'==line[0] ) {
+			break;
+		}
+		line[sizeof(line)/sizeof(char)-1] = '\0';
+		if ( ' '!=line[1] ) {
+			continue;
+		}
+
+		line[0] = toupper(line[0]);
+		index = FindEasySymbolIndex(line[0]);
+		if ( -1==index ) {
+			continue;
+		}
+
+		len = ueStrLen(&line[2]);
+		if ( 1>len ) {
+			continue;
+		}
+
+		symbol = (char*) malloc(8);
+		if ( NULL==symbol ) {
+			break;
+		}
+		ueStrNCpy(symbol, &line[2], 1, 1);
+
+		if ( NULL!=g_easy_symbol_value[index] ) {
+			free(g_easy_symbol_value[index]);
+		}
+		g_easy_symbol_value[index] = symbol;
+	}
+	fclose( file );
+	return 1;
+}
+
+void TerminateEasySymbolTable()
+{
+	int i;
+	for( i=0; i<sizeof(g_easy_symbol_key)/sizeof(char); ++i ) {
+		if ( NULL!=g_easy_symbol_value[i] ) {
+			free(g_easy_symbol_value[i]);
+			g_easy_symbol_value[i] = NULL;
+		}
 	}
 }
 
