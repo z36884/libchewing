@@ -911,9 +911,8 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 	else {
 		if ( pgdata->bChiSym == CHINESE_MODE ) {
 			if ( pgdata->bEasySymbolInput!=0 ) {
-				EasySymbolInput(key, pgdata);
-				keystrokeRtn = KEYSTROKE_ABSORB;
-				goto End_OnKeyDefault;
+				EasySymbolInput(key, pgdata, pgo);
+				goto End_keyproc;
 			}
 			/* open symbol table */
 			if( key == '`' ) {
@@ -926,7 +925,7 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 					&( pgdata->availInfo ), 
 					pgdata->phoneSeq, 
 					pgdata->config.candPerPage ); 
-				goto End_OnKeyDefault;
+				goto End_keyproc;
 			}
 			rtn = ZuinPhoInput( &( pgdata->zuinData ), key );
 			DEBUG_OUT(
@@ -965,10 +964,13 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 						bQuickCommit = 1;
 					}
 
-					if( pgdata->bFullShape )
-						rtn = FullShapeSymbolInput( key, pgdata );
-					else
-						rtn = SymbolInput( key, pgdata );
+					if ( pgdata->bEasySymbolInput==0 ) {
+						if( pgdata->bFullShape )
+							rtn = FullShapeSymbolInput( key, pgdata );
+						else
+							rtn = SymbolInput( key, pgdata );
+					}
+
 					if ( rtn == SYMBOL_KEY_ERROR ) {
 						keystrokeRtn = KEYSTROKE_IGNORE;
 						/*
@@ -1001,6 +1003,8 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 				bQuickCommit = 0;
 			}
 		}
+
+End_keyproc:
 		if ( ! bQuickCommit ) {
 			CallPhrasing( pgdata );
 			if( ReleaseChiSymbolBuf( pgdata, pgo ) != 0 )

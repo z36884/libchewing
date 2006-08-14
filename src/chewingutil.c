@@ -21,6 +21,7 @@
 #include "chewing-utf8-util.h"
 #include "global.h"
 #include "chewingutil.h"
+#include "chewingio.h"
 #include "zuin.h"
 #include "userphrase.h"
 #include "private.h"
@@ -39,7 +40,28 @@ static char g_easy_symbol_key[] = {
 		'U','V','W','X','Y','Z'
 	};
 static char *g_easy_symbol_value[sizeof(g_easy_symbol_key)] = { NULL };
+static int	g_easy_symbol_num[sizeof(g_easy_symbol_key)] = { 0 };
 
+static int FindEasySymbolIndex(char ch)
+{
+	int lo, hi, mid;
+
+	lo = 0;
+	hi = sizeof(g_easy_symbol_key)-1;
+	while ( lo<=hi ) {
+		mid = (hi-lo)/2 + lo;
+		if ( ch>g_easy_symbol_key[mid] ) {
+			lo = mid+1;
+			continue;
+		}
+		else if ( ch<g_easy_symbol_key[mid] ) {
+			hi = mid-1;
+			continue;
+		}
+		return	mid;
+	}
+	return	-1;
+}
 
 void SetUpdatePhraseMsg( ChewingData *pgdata, char *addWordSeq, int len, int state )
 {
@@ -123,39 +145,50 @@ int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	i
     return ZUIN_ABSORB;
 }
 
+static int _Inner_InternalSpecialSymbol(
+			int key, ChewingData *pgdata, char symkey, char *chibuf)
+{
+	int i, rtn = ZUIN_IGNORE; /* very strange , and very difficult to understand */
+	int kbtype;
+
+	if ( key == symkey && NULL!=chibuf ) {
+		rtn = ZUIN_ABSORB;
+		memmove( 
+			&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
+			&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] ),
+			sizeof(wch_t)*( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
+
+		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].wch = (wchar_t) 0;
+		ueStrNCpy( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].s,
+			chibuf, 1, 1);
+		/* Save Symbol Key */
+		memmove( &( pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor + 1 ] ),
+			&( pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor ] ),
+			sizeof( pgdata->symbolKeyBuf[0] ) * 
+			( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
+		pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor ] = key;
+		pgdata->chiSymbolCursor++;
+		pgdata->chiSymbolBufLen++;
+		pgdata->bUserArrCnnct[ pgdata->cursor ] = 0;
+		/* reset Zuin data */
+		/* Don't forget the kbtype */
+		kbtype = pgdata->zuinData.kbtype;
+		memset( &( pgdata->zuinData ), 0, sizeof( ZuinData ) );
+		pgdata->zuinData.kbtype = kbtype;
+		return	1;
+	}
+	return	0;
+}
+
 static int InternalSpecialSymbol(
 		int key, ChewingData *pgdata,
 		int nSpecial, char keybuf[], char *chibuf[] )
 {
 	int i, rtn = ZUIN_IGNORE; /* very strange , and very difficult to understand */
-        int kbtype;
+	int kbtype;
 
 	for ( i = 0; i < nSpecial; i++ ) {
-		if ( key == keybuf[ i ] && NULL!=chibuf[i] ) {
-			rtn = ZUIN_ABSORB;
-			memmove( 
-				&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
-				&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] ),
-				sizeof( wch_t ) * 
-				( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
-
-			pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].wch = (wchar_t) 0;
-			ueStrNCpy( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].s,
-					chibuf[ i ], 1, 1);
-			/* Save Symbol Key */
-			memmove( &( pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor + 1 ] ),
-				&( pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor ] ),
-				sizeof( pgdata->symbolKeyBuf[0] ) * 
-				( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
-			pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor ] = key;
-			pgdata->chiSymbolCursor++;
-			pgdata->chiSymbolBufLen++;
-			pgdata->bUserArrCnnct[ pgdata->cursor ] = 0;
-			/* reset Zuin data */
-                        /* Don't forget the kbtype */
-                        kbtype = pgdata->zuinData.kbtype;
-			memset( &( pgdata->zuinData ), 0, sizeof( ZuinData ) );
-                        pgdata->zuinData.kbtype = kbtype;
+		if ( 1==_Inner_InternalSpecialSymbol(key, pgdata, keybuf[i], chibuf[i]) ){
 			break;
 		}
 	}
@@ -211,10 +244,22 @@ int FullShapeSymbolInput( int key, ChewingData *pgdata )
 	return (rtn == ZUIN_IGNORE ? SYMBOL_KEY_ERROR : SYMBOL_KEY_OK);
 }
 
-int EasySymbolInput(int key, ChewingData *pgdata)
+int EasySymbolInput(int key, ChewingData *pgdata, ChewingOutput *pgo)
 {
-	int rtn;
+	int rtn, lop, index;
+	char	wordbuf[8];
+
 	int nSpecial = sizeof(g_easy_symbol_key)/sizeof(char);
+
+	index = FindEasySymbolIndex(key);
+	if ( -1!=index ) {
+		for ( lop=0; lop<g_easy_symbol_num[index]; ++lop ) {
+			ueStrNCpy(wordbuf, 
+				ueStrSeek(g_easy_symbol_value[index], lop), 1, 1);
+			rtn = _Inner_InternalSpecialSymbol(key, pgdata, key, wordbuf);
+		}
+		return	SYMBOL_KEY_OK;
+	}
 
 	rtn = InternalSpecialSymbol( 
 		key, pgdata, nSpecial, 
@@ -408,8 +453,14 @@ int CountReleaseNum( ChewingData *pgdata )
 		sizeof( IntervalType ),
 		(CompFuncType) CompInterval ); 
 
-	if ( ! ChewingIsChiAt( 0, pgdata ) )
-		return 1;
+	if ( ! ChewingIsChiAt( 0, pgdata ) ) {
+		for ( i=0; i<pgdata->chiSymbolCursor; ++i ) {
+			if ( ChewingIsChiAt(i, pgdata) ) {
+				break;
+			}
+		}
+		return	i-1;
+	}
 	
 	i = FindIntervalFrom( 0, pgdata->preferInterval, pgdata->nPrefer );
 	if ( i >= 0 ) {
@@ -1116,27 +1167,6 @@ void TerminateSymbolTable()
 	}
 }
 
-static int FindEasySymbolIndex(char ch)
-{
-	int lo, hi, mid;
-
-	lo = 0;
-	hi = sizeof(g_easy_symbol_key)-1;
-	while ( lo<=hi ) {
-		mid = (hi-lo)/2 + lo;
-		if ( ch>g_easy_symbol_key[mid] ) {
-			lo = mid+1;
-			continue;
-		}
-		else if ( ch<g_easy_symbol_key[mid] ) {
-			hi = mid-1;
-			continue;
-		}
-		return	mid;
-	}
-	return	-1;
-}
-
 int InitEasySymbolInput( const char *prefix )
 {
 #ifndef	WIN32
@@ -1163,10 +1193,14 @@ int InitEasySymbolInput( const char *prefix )
 		if ( '\0'==line[0] ) {
 			break;
 		}
+
 		line[sizeof(line)/sizeof(char)-1] = '\0';
 		if ( ' '!=line[1] ) {
 			continue;
 		}
+
+		len = strcspn(line, "\r\n\0");
+		line[len] = '\0';
 
 		line[0] = toupper(line[0]);
 		index = FindEasySymbolIndex(line[0]);
@@ -1175,20 +1209,21 @@ int InitEasySymbolInput( const char *prefix )
 		}
 
 		len = ueStrLen(&line[2]);
-		if ( 1>len ) {
+		if ( 0==len || 10<=len ) {
 			continue;
 		}
 
-		symbol = (char*) malloc(8);
+		symbol = (char*) malloc(6*10);
 		if ( NULL==symbol ) {
 			break;
 		}
-		ueStrNCpy(symbol, &line[2], 1, 1);
+		ueStrNCpy(symbol, &line[2], 9, 1);
 
 		if ( NULL!=g_easy_symbol_value[index] ) {
 			free(g_easy_symbol_value[index]);
 		}
 		g_easy_symbol_value[index] = symbol;
+		g_easy_symbol_num[index] = len;
 	}
 	fclose( file );
 	return 1;
