@@ -189,6 +189,7 @@ static int InternalSpecialSymbol(
 
 	for ( i = 0; i < nSpecial; i++ ) {
 		if ( 1==_Inner_InternalSpecialSymbol(key, pgdata, keybuf[i], chibuf[i]) ){
+			rtn = ZUIN_ABSORB;
 			break;
 		}
 	}
@@ -1237,6 +1238,7 @@ void TerminateEasySymbolTable()
 			free(g_easy_symbol_value[i]);
 			g_easy_symbol_value[i] = NULL;
 		}
+		g_easy_symbol_num[i] = 0;
 	}
 }
 
