@@ -25,73 +25,69 @@ int HANYU_INITIALS, HANYU_FINALS, INIT_FLAG = 0;
 
 static PinYingZuinMap* InitialsMap()
 {
-	static PinYingZuinMap map[ 26 ] = {
-		{"b" , "1"}, {"p" , "q"}, {"m" , "a"}, {"f" ,"z"},
-		{"d" , "2"}, {"t" , "w"}, {"n" , "s"}, {"l" ,"x"},
-		{"g" , "e"}, {"k" , "d"}, {"h" , "c"},
-		{"j" , "r"}, {"q" , "f"}, {"x" , "v"},
-		{"zhi", "5"}, {"zh", "5"}, {"chi", "t"}, {"ch", "t"},
-		{"shi", "g"}, {"sh", "g"}, {"ri", "b"}, {"r" ,"b"},
-		{"z" , "y"}, {"c" , "h"}, {"s" , "n"}
-	};
-	HANYU_INITIALS = 26;
-	return map;
+       static PinYingZuinMap map[ 22 ] = {
+               {"b" , "1"}, {"p" , "q"}, {"m" , "a"}, {"f" ,"z"},
+               {"d" , "2"}, {"t" , "w"}, {"n" , "s"}, {"l" ,"x"},
+               {"g" , "e"}, {"k" , "d"}, {"h" , "c"}, {"j" , "r"},
+               {"q" , "f"}, {"x" , "v"},
+               {"zh", "5"}, {"ch", "t"}, {"sh", "g"},
+               {"r" ,"b"}, {"z" , "y"}, {"c" , "h"}, {"s" , "n"}
+       };
+       HANYU_INITIALS = 22;
+       return map;
 }
 
 static PinYingZuinMap* FinalsMap()
 {
-	static PinYingZuinMap map[ 72 ] = {
-		{"uang","j;"}, {"wang","j;"},
-		{"wong","j/"}, {"weng","j/"},
-		{"ying","u/"},
-		{"iong","m/"}, {"yong","m/"}, {"iung","m/"}, {"yung","m/"},
-		{"iang","u;"}, {"yang","u;"},
-		{"iuan","m0"}, {"yuan","m0"},
-		{"ing","u/"},
-		{"iao","ul"}, {"yao","ul"},
-		{"iun","mp"}, {"yun","mp"},
-		{"iou","u."}, {"you","u."},
-		{"ian","u0"}, {"yan","u0"},
-		{"yin","up"},
-		{"ang",";"},
-		{"eng","/"},
-		{"iue","m,"}, {"yue","m,"},
-		{"uai","j9"}, {"wai","j9"},
-		{"uei","jo"}, {"wei","jo"},
-		{"uan","j0"}, {"wan","j0"},
-		{"uen","jp"}, {"wen","jp"},
-		{"ong","j/"},
-		{"van","m0"},
-		{"ven","mp"},
-		{"er","-"},
-		{"ai","9"},
-		{"ei","o"},
-		{"ao","l"},
-		{"ou","."},
-		{"an","0"},
-		{"en","p"},
-		{"yi","u"},
-		{"ia","u8"}, {"ya","u8"},
-		{"ie","u,"}, {"ye","u,"},
-		{"in","up"},
-		{"io","u."},
-		{"wu","j"},
-		{"ua","j8"}, {"wa","j8"},
-		{"uo","ji"}, {"wo","ji"},
-		{"ui","jo"},
-		{"iu","m"}, {"yu","m"},
-		{"ue","m,"}, {"ve","m,"},
-		{"un","mp"}, {"vn","mp"},
-		{"a","8"},
-		{"e","k"},
-		{"i","u"},
-		{"o","i"},
-		{"v","m"},
-		{"u","j"},
-		{"E",","}
-	};
-	HANYU_FINALS = 72;
-	return map;
+       static PinYingZuinMap map[ 60 ] = {
+               {"uang","j;"}, {"wang","j;"},
+               {"weng","j/"},
+               {"ying","u/"},
+               {"yong","m/"}, {"iong","m/"},
+               {"iang","u;"}, {"yang","u;"},
+               {"yuan","m0"},
+               {"ing","u/"},
+               {"iao","ul"}, {"yao","ul"},
+               {"yun","mp"},
+               {"iu","u."}, {"you","u."},
+               {"ian","u0"}, {"yan","u0"},
+               {"yin","up"},
+               {"ang",";"},
+               {"eng","/"},
+               {"yue","m,"},
+               {"uai","j9"}, {"wai","j9"},
+               {"ui","jo"}, {"wei","jo"},
+               {"uan","j0"}, {"wan","j0"},
+               {"un","jp"}, {"wen","jp"},
+               {"ong","j/"},
+               {"van","m0"},
+               {"er","-"},
+               {"ai","9"},
+               {"ei","o"},
+               {"ao","l"},
+               {"ou","."},
+               {"an","0"},
+               {"en","p"},
+               {"yi","u"},
+               {"ia","u8"}, {"ya","u8"},
+               {"ie","u,"}, {"ye","u,"},
+               {"in","up"},
+               {"wu","j"},
+               {"ua","j8"}, {"wa","j8"},
+               {"uo","ji"}, {"wo","ji"},
+               {"yu","m"},
+               {"ve","m,"},
+               {"vn","mp"},
+               {"a","8"},
+               {"e","k"},
+               {"i","u"},
+               {"o","i"},
+               {"v","m"},
+               {"u","j"},
+               {"E",","}
+       };
+       HANYU_FINALS = 60;
+       return map;
 }
 
 static void FreeMap()
