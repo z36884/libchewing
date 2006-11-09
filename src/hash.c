@@ -15,6 +15,7 @@
 #ifdef WIN32
 	#include <windows.h>
 	#include <direct.h>
+	#include <limits.h>
 #endif
 #include <string.h>
 #include <sys/stat.h>
@@ -424,52 +425,10 @@ static int migrate_hash_to_bin(const char *ofilename)
 	return	1;
 }
 
-int ComputeChewingLifeTime() {
-	HASH_ITEM *item;
-	int i, min;
-	
-	i = 0;
-
-	chewing_lifetime++;
-	min = chewing_lifetime;
-
-	while ( hashtable[i] ) {
-
-		item = hashtable[i];
-
-		while ( item ) {
-			if ( item->data.recentTime < min )
-				min = item->data.recentTime;
-			item = item->next;
-		}
-
-		i++;
-	}
-
-	chewing_lifetime -= min;
-	
-	i = 0;
-
-	while ( hashtable[i] ) {
-
-		item = hashtable[i];
-
-		while ( item ) {
-			item->data.recentTime -= min;
-			HashModify( item );
-			item = item->next;
-		}
-
-		i++;
-	}
-	return 0;
-
-}
-
 int ReadHash( char *path )
 {
-	HASH_ITEM item, *pItem;
-	int item_index, hashvalue, iret, fsize, hdrlen;
+	HASH_ITEM item, *pItem, *pPool=NULL;
+	int item_index, hashvalue, iret, fsize, hdrlen, oldest=INT_MAX;
 	char	*dump, *seekdump;
 
 	/* make sure of write permission */
@@ -551,19 +510,29 @@ open_hash_file:
 			else if ( iret==0 )
 				break;
 
-			hashvalue = HashFunc( item.data.phoneSeq );
 			pItem = ALC( HASH_ITEM, 1 );
 			memcpy( pItem, &item, sizeof( HASH_ITEM ) );
-			pItem->next = hashtable[ hashvalue ];
-			hashtable[ hashvalue ] = pItem;
+			pItem->next = pPool;
+			pPool = pItem;
+			if ( oldest>pItem->data.recentTime ) {
+				oldest = pItem->data.recentTime;
+			}
 
 			seekdump += FIELD_SIZE;
 			fsize -= FIELD_SIZE;
 		}
 		free(dump);
 
-		ComputeChewingLifeTime();
+		while ( pPool ) {
+			pItem = pPool;
+			pPool = pItem->next;
 
+			hashvalue = HashFunc( pItem->data.phoneSeq );
+			pItem->next = hashtable[ hashvalue ];
+			hashtable[ hashvalue ] = pItem;
+
+			pItem->data.recentTime -= oldest;
+		};
 	}
 	return 1;
 }
