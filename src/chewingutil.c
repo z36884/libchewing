@@ -148,7 +148,7 @@ int HaninSymbolInput(ChoiceInfo *pci, AvailInfo *pai, const uint16 phoneSeq[],	i
 static int _Inner_InternalSpecialSymbol(
 			int key, ChewingData *pgdata, char symkey, char *chibuf)
 {
-	int i, rtn = ZUIN_IGNORE; /* very strange , and very difficult to understand */
+	int rtn = ZUIN_IGNORE; /* very strange , and very difficult to understand */
 	int kbtype;
 
 	if ( key == symkey && NULL!=chibuf ) {
@@ -185,7 +185,6 @@ static int InternalSpecialSymbol(
 		int nSpecial, char keybuf[], char *chibuf[] )
 {
 	int i, rtn = ZUIN_IGNORE; /* very strange , and very difficult to understand */
-	int kbtype;
 
 	for ( i = 0; i < nSpecial; i++ ) {
 		if ( 1==_Inner_InternalSpecialSymbol(key, pgdata, keybuf[i], chibuf[i]) ){
@@ -1179,7 +1178,7 @@ int InitEasySymbolInput( const char *prefix )
 	char filename[ 512 ];
 	char line[512];
 	char *symbol;
-	int len = 0, i, index;
+	int len = 0, index;
 
 
 	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, SOFTKBD_TABLE_FILE );
