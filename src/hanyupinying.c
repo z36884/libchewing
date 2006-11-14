@@ -27,12 +27,12 @@ int HANYU_COMMONINITIALS, HANYU_COMMONFINALS, HANYU_SPECIALS, INIT_FLAG = 0;
 static PinYingZuinMap* CommonInitialsMap()
 {
       static PinYingZuinMap map[] = {
-                          {"zh", "5"}, {"ch", "t"}, {"sh", "g"},
-              {"b" , "1"}, {"p" , "q"}, {"m" , "a"}, {"f" ,"z"},
-              {"d" , "2"}, {"t" , "w"}, {"n" , "s"}, {"l" ,"x"},
-              {"g" , "e"}, {"k" , "d"}, {"h" , "c"}, {"j" , "r"},
-              {"q" , "f"}, {"x" , "v"},
-              {"r" ,"b"}, {"z" , "y"}, {"c" , "h"}, {"s" , "n"}
+              {"zh","5"}, {"ch","t"}, {"sh","g"},
+              {"b","1"}, {"p","q"}, {"m","a"}, {"f","z"},
+              {"d","2"}, {"t","w"}, {"n","s"}, {"l","x"},
+              {"g","e"}, {"k","d"}, {"h","c"},
+			  {"j","r"}, {"q","f"}, {"x","v"},
+              {"r","b"}, {"z","y"}, {"c","h"}, {"s","n"}
       };
       HANYU_COMMONINITIALS = sizeof(map)/sizeof(map[0]);
       return map;
@@ -41,43 +41,32 @@ static PinYingZuinMap* CommonInitialsMap()
 static PinYingZuinMap* CommonFinalsMap()
 {
       static PinYingZuinMap map[] = {
-              {"uang","j;"},
-              {"weng","j/"},
-              {"iong","m/"},
-              {"iang","u;"},
-              {"ing","u/"},
-              {"iao","ul"},
-              {"iu","u."},
-              {"ian","u0"},
+              {"uang","j;"}, //{"ueng","j/"},
+              {"iang","u;"}, {"iong","m/"},
+              {"iao","ul"}, {"ian","u0"}, {"ing","u/"},
               {"ang",";"},
               {"eng","/"},
-              {"uai","j9"},
-              {"ui","jo"},
-              {"uan","j0"},
-              {"un","jp"},
-              {"ong","j/"},
-              {"van","m0"},
-              {"er","-"},
-              {"ai","9"},
-              {"ei","o"},
-              {"ao","l"},
-              {"ou","."},
+			  {"ong","j/"},
+              {"uai","j9"}, {"uan","j0"},
+			  {"van","m0"},
+			  {"ia","u8"}, {"ie","u,"},
+			  {"iu","u."}, {"in","up"},
+			  {"ua","j8"}, {"uo","ji"},
+			  {"ui","jo"}, {"un","jp"},
+              {"ve","m,"}, {"vn","mp"},
+			  //{"er","-"},
+			  {"ai","9"},
+			  {"ei","o"},
+			  {"ao","l"},
+			  {"ou","."},
               {"an","0"},
               {"en","p"},
-              {"ia","u8"},
-              {"ie","u,"},
-              {"in","up"},
-              {"ua","j8"},
-              {"uo","ji"},
-              {"ve","m,"},
-              {"vn","mp"},
               {"a","8"},
+			  {"o","i"},
               {"e","k"},
               {"i","u"},
-              {"o","i"},
-              {"v","m"},
               {"u","j"},
-              {"E",","}
+              {"v","m"}
       };
       HANYU_COMMONFINALS = sizeof(map)/sizeof(map[0]);
       return map;
@@ -86,36 +75,28 @@ static PinYingZuinMap* CommonFinalsMap()
 static PinYingZuinMap* SpecialsMap()
 {
       static PinYingZuinMap map[] = {
-              {"wang","j;"},
-              {"weng","j/"},
-              {"ying","u/"},
-              {"yong","m/"},
-              {"yang","u;"},
-              {"yuan","m0"},
-                          {"zhi","5"},
-                          {"chi","t"},
-                          {"shi","g"},
-              {"yao","ul"},
-              {"yun","mp"},
-              {"you","u."},
-              {"yan","u0"},
-              {"yin","up"},
-              {"yue","m,"},
-              {"wai","j9"},
-              {"wei","jo"},
-              {"wan","j0"},
-              {"wen","jp"},
-                          {"ri","b"},
-                          {"zi","y"},
-                          {"ci","h"},
-                          {"si","n"},
-              {"yi","u"},
-              {"ya","u8"},
-              {"ye","u,"},
-              {"wu","j"},
-              {"wa","j8"},
-              {"wo","ji"},
-              {"yu","m"}
+              {"wang","j;"}, {"weng","j/"},
+              {"yang","u;"}, {"ying","u/"}, {"yong","m/"},
+              {"yvan","m0"},
+			  {"ang",";"},
+              {"zhi","5"}, {"chi","t"}, {"shi","g"},
+              {"yao","ul"}, {"you","u."},
+			  {"yan","u0"}, {"yin","up"},
+              {"wai","j9"}, {"wei","jo"},
+              {"wan","j0"}, {"wen","jp"},
+			  {"yve","m0"}, {"yvn","mp"},
+			  {"er","-"},
+			  {"ai","9"},
+			  {"ei","o"},
+			  {"ao","l"},
+			  {"ou","."},
+			  {"an","0"},
+			  {"en","p"},
+              {"yi","u"}, {"ya","u8"}, {"ye","u,"},
+              {"wu","j"}, {"wa","j8"}, {"wo","ji"},
+              {"yv","m"},
+			  {"ri","b"}, {"zi","y"}, {"ci","h"}, {"si","n"},
+			  {"a","8"}, {"o","i"}, {"e","k"},{"E",","}
       };
       HANYU_SPECIALS = sizeof(map)/sizeof(map[0]);
       return map;
@@ -240,3 +221,4 @@ int HanyuPinYingToZuin( char *pinyingKeySeq, char *zuinKeySeq )
        sprintf( zuinKeySeq, "%s%s\0", initial, final );
        return 0;
 }
+
