@@ -246,7 +246,7 @@ int ReadHashItem_bin(const char *srcbuf, HASH_ITEM *pItem, int item_index )
 		++pshort;
 	}
 	pItem->data.phoneSeq[i] = 0;
-	
+
 	/* phrase, length in num of bytes */
 	puc = (unsigned char*) pshort;
 	pItem->data.wordSeq = ALC( char, (*puc) + 1 );
@@ -421,6 +421,7 @@ static int migrate_hash_to_bin(const char *ofilename)
 	fwrite(dump, seekdump-dump, 1, txtfile);
 	fflush(txtfile);
 	fclose(txtfile);
+	free(dump);
 
 	return	1;
 }
@@ -533,6 +534,7 @@ open_hash_file:
 
 			pItem->data.recentTime -= oldest;
 		};
+		chewing_lifetime -= oldest;
 	}
 	return 1;
 }

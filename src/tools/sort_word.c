@@ -79,12 +79,13 @@ void Output()
 	for ( i = 0; i < nWord; i++ ) {
 		
 #ifdef WIN32
-	/*filter*/
-	wchar_t wchbuf[5];
-	MultiByteToWideChar( CP_UTF8, MB_ERR_INVALID_CHARS, word_data[i].word, -1, wchbuf, sizeof(wchbuf)/sizeof(wchar_t) );
-	if( wcslen( wchbuf ) != 1 )	{
-		continue;
-	}
+		/*filter*/
+		wchar_t wchbuf[5];
+		memset(wchbuf, 0, sizeof(wchbuf));
+		MultiByteToWideChar(CP_UTF8, 0, word_data[i].word, -1, wchbuf, sizeof(wchbuf)/sizeof(wchar_t) );
+		if( wcslen( wchbuf ) != 1 )	{
+			continue;
+		}
 #endif
 		if ( word_data[ i ].num[0] != previous ) {
 			previous = word_data[ i ].num[0];
