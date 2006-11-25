@@ -861,7 +861,7 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 		num = CountSelKeyNum( key, pgdata );
 		if ( num >= 0 ) {
 			DoSelect( pgdata, num );
-			goto End_OnKeyDefault;
+			goto End_keyproc;
 		}
 		
 		/* Otherwise, use 'j' and 'k' for paging in selection mode */
@@ -925,7 +925,7 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 					&( pgdata->availInfo ), 
 					pgdata->phoneSeq, 
 					pgdata->config.candPerPage ); 
-				goto End_keyproc;
+				goto End_Paging;
 			}
 			rtn = ZuinPhoInput( &( pgdata->zuinData ), key );
 			DEBUG_OUT(
@@ -1003,24 +1003,24 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 				bQuickCommit = 0;
 			}
 		}
+	}
 
 End_keyproc:
-		if ( ! bQuickCommit ) {
-			CallPhrasing( pgdata );
-			if( ReleaseChiSymbolBuf( pgdata, pgo ) != 0 )
-				keystrokeRtn = KEYSTROKE_COMMIT;
-		}
-		/* Quick commit */
-		else {
-			DEBUG_OUT(
-				"\t\tQuick commit buf[0]=%c\n", 
-				pgdata->chiSymbolBuf[ 0 ].s[ 0 ] );
-			pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ]; 
-			pgo->nCommitStr = 1;
-			pgdata->chiSymbolBufLen = 0;
-			pgdata->chiSymbolCursor = 0;
+	if ( ! bQuickCommit ) {
+		CallPhrasing( pgdata );
+		if( ReleaseChiSymbolBuf( pgdata, pgo ) != 0 )
 			keystrokeRtn = KEYSTROKE_COMMIT;
-		}
+	}
+	/* Quick commit */
+	else {
+		DEBUG_OUT(
+			"\t\tQuick commit buf[0]=%c\n", 
+			pgdata->chiSymbolBuf[ 0 ].s[ 0 ] );
+		pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ]; 
+		pgo->nCommitStr = 1;
+		pgdata->chiSymbolBufLen = 0;
+		pgdata->chiSymbolCursor = 0;
+		keystrokeRtn = KEYSTROKE_COMMIT;
 	}
 	if( pgdata->phrOut.nNumCut > 0 ) {
 		int i;
