@@ -1,5 +1,5 @@
 /**
- * hanyupinying.h 
+ * hanyupinyin.h 
  *
  * Copyright (c) 2005
  *      libchewing Core Team. See ChangeLog for details.
@@ -8,11 +8,11 @@
  * of this file.
  */
 
-/* @(#)hanyupinying.h
+/* @(#)hanyupinyin.h
  */
 
-#ifndef _HANYUPINYING_H
-#define _HANYUPINYING_H
+#ifndef _HANYUPINYIN_H
+#define _HANYUPINYIN_H
 
 /*
   This is a key-sequense map.

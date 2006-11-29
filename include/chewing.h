@@ -23,7 +23,7 @@ extern "C" {
 #include "hash.h"
 #include "userphrase.h"
 #include "zuin.h"
-#include "hanyupinying.h"
+#include "hanyupinyin.h"
 
 /* new macro to indicate the internal encoding.
  * since libchewing 0.3.0 */

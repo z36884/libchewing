@@ -1,5 +1,5 @@
 /**
- * hanyupinying.c
+ * hanyupinyin.c
  *
  * Copyright (c) 2005, 2006
  *      libchewing Core Team. See ChangeLog for details.
@@ -8,12 +8,12 @@
  * of this file.
  */
 
-/* @(#)hanyupinying.c
+/* @(#)hanyupinyin.c
  */
 
 #include <stdio.h>
 #include <string.h>
-#include "hanyupinying.h"
+#include "hanyupinyin.h"
 #include "hash.h"
 #include "private.h"
 
