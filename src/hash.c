@@ -14,6 +14,8 @@
 
 #include <string.h>
 #include <sys/stat.h>
+/* ISO C99 Standard: 7.10/5.2.4.2.1 Sizes of integer types */
+#include <limits.h>
 
 #include "chewing-utf8-util.h"
 #include "hash.h"
@@ -435,14 +437,9 @@ int ReadHash( const char *path )
 				"C:\\Windows\\TEM\\", CHEWING_HASH_PATH );
 #endif
 		}
-#ifndef WIN32
-		mkdir( hashfilename, S_IRWXU );
-		strcat (hashfilename, "/");
-#else
-		mkdir( hashfilename );
+		PLAT_MKDIR( hashfilename );
 		strcat( hashfilename, PLAT_SEPARATOR );
-#endif
-		strcat (hashfilename, HASH_FILE);
+		strcat( hashfilename, HASH_FILE );
 	} else {
 		sprintf( hashfilename, "%s" PLAT_SEPARATOR "%s", path, HASH_FILE );
 	}
