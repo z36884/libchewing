@@ -16,15 +16,8 @@
 #include <assert.h>
 #include <string.h>
 
-#ifdef WIN32
-	#include <windows.h>
-#else
-	#include <unistd.h>
-#endif
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
+#include "private.h"
+#include "plat_mmap.h"
 #include "dict.h"
 
 #ifdef	USE_BINARY_DAT

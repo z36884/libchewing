@@ -593,7 +593,7 @@ int OnKeyDown( void *iccf, ChewingOutput *pgo )
 int OnKeyShiftLeft( void *iccf, ChewingOutput *pgo )
 {
 	ChewingData *pgdata = (ChewingData *)iccf ;
-	int keystrokeRtn = KEYSTROKE_ABSORB ;
+	int keystrokeRtn = KEYSTROKE_ABSORB;
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
 		keystrokeRtn = KEYSTROKE_IGNORE;
@@ -657,7 +657,7 @@ int OnKeyLeft( void *iccf, ChewingOutput *pgo )
 int OnKeyShiftRight(void *iccf, ChewingOutput *pgo)
 {
 	ChewingData *pgdata = (ChewingData *)iccf ;
-	int keystrokeRtn = KEYSTROKE_ABSORB ;
+	int keystrokeRtn = KEYSTROKE_ABSORB;
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
 		keystrokeRtn = KEYSTROKE_IGNORE;
@@ -809,13 +809,13 @@ int OnKeyEnd( void *iccf, ChewingOutput *pgo )
 	CheckAndResetRange( pgdata );
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
-		keystrokeRtn = KEYSTROKE_IGNORE; 
-	} 
+		keystrokeRtn = KEYSTROKE_IGNORE;
+	}
 	else if ( ! pgdata->bSelect ) {
-		pgdata->chiSymbolCursor = pgdata->chiSymbolBufLen; 
-		pgdata->cursor = pgdata->nPhoneSeq; 
-	} 
-	MakeOutputWithRtn( pgo, pgdata, keystrokeRtn );       
+		pgdata->chiSymbolCursor = pgdata->chiSymbolBufLen;
+		pgdata->cursor = pgdata->nPhoneSeq;
+	}
+	MakeOutputWithRtn( pgo, pgdata, keystrokeRtn );
 	return 0;
 }
 
@@ -1077,7 +1077,7 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 	CallPhrasing( pgdata );
 	newPhraseLen = key - '0';
 
-	if ( ( key == '0' || key == '1') ) {
+	if ( key == '0' || key == '1' ) {
         return 0;
 	}
 
@@ -1117,21 +1117,18 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 		if ( 
 			newPhraseLen >= 1 && 
 			pgdata->cursor - newPhraseLen >= 0 ) {
-			if ( NoSymbolBetween( 
-				pgdata, 
-				pgdata->cursor, 
-				pgdata->cursor - newPhraseLen ) ) {
+			if ( NoSymbolBetween( pgdata, 
+			                      pgdata->cursor, 
+			                      pgdata->cursor - newPhraseLen ) ) {
 				/* Manually add phrase to the user phrase database. */
-				memcpy(
-					addPhoneSeq,
-					&pgdata->phoneSeq[ pgdata->cursor - newPhraseLen ],
-					sizeof( uint16 ) * newPhraseLen );
+				memcpy( addPhoneSeq,
+				        &pgdata->phoneSeq[ pgdata->cursor - newPhraseLen ],
+				        sizeof( uint16 ) * newPhraseLen );
 				addPhoneSeq[ newPhraseLen ] = 0;
-				ueStrNCpy(
-						addWordSeq,
-						ueStrSeek( (char *) &pgdata->phrOut.chiBuf,
-							pgdata->cursor - newPhraseLen ),
-						newPhraseLen, 1);
+				ueStrNCpy( addWordSeq,
+				           ueStrSeek( (char *) &pgdata->phrOut.chiBuf,
+				           pgdata->cursor - newPhraseLen ),
+				           newPhraseLen, 1);
 
 				phraseState = UserUpdatePhrase( addPhoneSeq, addWordSeq );
 				SetUpdatePhraseMsg( 
