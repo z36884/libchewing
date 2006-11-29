@@ -5,7 +5,7 @@
  *	Lu-chuan Kung and Kang-pen Chen.
  *	All rights reserved.
  *
- * Copyright (c) 2004, 2005
+ * Copyright (c) 2004, 2005, 2006
  *	libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -25,7 +25,7 @@
 #define KB_ET26 5
 #define KB_DVORAK 6
 #define KB_DVORAK_HSU 7
-#define KB_HANYU_PINYING 8
+#define KB_HANYU_PINYIN 8
 
 #define ZUIN_IGNORE 0
 #define ZUIN_ABSORB 1

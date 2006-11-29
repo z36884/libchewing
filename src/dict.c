@@ -30,7 +30,7 @@
 #ifdef	USE_BINARY_DAT
 	static int *begin = NULL;
 #else
-	static int begin[ PHONE_PHRASE_NUM + 1 ];
+static int begin[ PHONE_PHRASE_NUM + 1 ];
 #endif
 static FILE *dictfile;
 static int end_pos;
@@ -40,7 +40,7 @@ static int end_pos;
  */
 int addTerminateService( void (*callback)() );
 
-static char* fgettab( char *buf, int maxlen, FILE *fp )
+static char *fgettab( char *buf, int maxlen, FILE *fp )
 {
 	int i;
 
@@ -61,7 +61,6 @@ static void TerminateDict()
 {
 	if ( dictfile )
 		fclose( dictfile );
-
 #ifdef	USE_BINARY_DAT
 	if( begin )
 		free( begin );

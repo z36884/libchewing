@@ -37,6 +37,8 @@ int OnKeyRight( void *, ChewingOutput * );
 int OnKeyUp( void *, ChewingOutput * );
 int OnKeyHome( void *, ChewingOutput * );
 int OnKeyEnd( void *, ChewingOutput * );
+
+
 int OnKeyDown( void *, ChewingOutput * );
 int OnKeyCapslock( void *, ChewingOutput * );
 int OnKeyDefault( void *, int, ChewingOutput * );
@@ -64,6 +66,15 @@ int SetConfig( void *iccf, ConfigData *pcd );
  * @return If successed then return 0
  */
 int InitChewing( void *iccf, ChewingConf *cf );
+
+/**
+ * @breif Set keyboard type
+ *
+ * @param ctx
+ * @param kbtype kbtype from KBStr2Num
+ * @return If successed then return 0
+ */
+void SetKBType( ZuinData *pZuin, int kbtype );
 
 /**
  * @brief Terminate chewing

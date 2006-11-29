@@ -5,7 +5,7 @@
  *	Lu-chuan Kung and Kang-pen Chen.
  *	All rights reserved.
  *
- * Copyright (c) 2004, 2005
+ * Copyright (c) 2004, 2005, 2006
  *	libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -19,9 +19,6 @@
 
 #include <string.h>
 #include <ctype.h>
-#ifdef WIN32
-#include <windows.h>
-#endif
 
 #include "chewing-utf8-util.h"
 #include "chewingio.h"
@@ -29,6 +26,9 @@
 #include "zuin.h"
 #include "chewingutil.h"
 #include "userphrase.h"
+#include "dict.h"
+#include "char.h"
+#include "hash.h"
 #include "private.h"
 
 #ifdef ENABLE_DEBUG
@@ -42,13 +42,13 @@ FILE *fp_g;
 uint16 g_lastPhoneSeq[MAX_PHONE_SEQ_LEN] = {0};
 #endif
 
+extern int chewing_lifetime;
+
 void (*TerminateServices[ TerminateServicesNUM ])() = {
 	NULL
 };
 static int countTerminateService = 0;
 static int bTerminateCompleted = 0;
-
-extern int chewing_lifetime;
 
 static char *kb_type_str[] = {
 	"KB_DEFAULT",
@@ -73,11 +73,6 @@ int KBStr2Num( char str[] )
 	return KB_DEFAULT;
 }
 
-void SetKBType( ZuinData *pZuin, int kbtype )
-{
-	pZuin->kbtype = kbtype;
-}
-
 #ifdef ENABLE_DEBUG     
 static void TerminateDebug()
 {
@@ -89,7 +84,7 @@ static void TerminateDebug()
 #endif
 
 int addTerminateService( void (*callback)() )
-{       
+{
 	if ( callback ) {
 		int i;
 		for ( i = 0; i < countTerminateService; ++i ) {
@@ -108,6 +103,7 @@ int InitChewing( void *iccf, ChewingConf *cf )
 	ChewingData *pgdata = (ChewingData *) iccf;
 
 #ifdef ENABLE_DEBUG
+{
         char *dbg_path;
 	int failsafe = 1;
 	dbg_path = getenv( "CHEWING_DEBUG" );
@@ -125,8 +121,10 @@ int InitChewing( void *iccf, ChewingConf *cf )
 				"--> Output to stderr\n" );
 		}
 	}
+	/* register debug service */
 	if ( fp_g )
 		addTerminateService( TerminateDebug );
+}
 #endif
 
 	/* zuinData */
@@ -151,6 +149,11 @@ int InitChewing( void *iccf, ChewingConf *cf )
 	pgdata->PointEnd = 0;
 	pgdata->phrOut.nNumCut = 0;
 	return 0;
+}
+
+void SetKBType( ZuinData *pZuin, int kbtype )
+{
+	pZuin->kbtype = kbtype;
 }
 
 void TerminateChewing()
@@ -197,8 +200,9 @@ int SetConfig( void *iccf, ConfigData *pcd )
 		pgdata->config.bAddPhraseForward = 0;
 	if ( (pgdata->config.bSpaceAsSelection != 0) && (pgdata->config.bSpaceAsSelection != 1) )
 		pgdata->config.bSpaceAsSelection = 1;
-	if( (pgdata->config.bEscCleanAllBuf != 0) && (pgdata->config.bEscCleanAllBuf != 1) )
+	if ( (pgdata->config.bEscCleanAllBuf != 0) && (pgdata->config.bEscCleanAllBuf != 1) )
 		pgdata->config.bEscCleanAllBuf = 0;
+
 	return 0;
 }
 
@@ -245,19 +249,21 @@ static int DoSelect( ChewingData *pgdata, int num )
 		if ( num < pgdata->choiceInfo.nTotalChoice ) {
 			if ( pgdata->choiceInfo.isSymbol ) {
 				SymbolChoice( pgdata, num );
-			} else { 
+			}
+			else { 
 				/* change the select interval & selectStr & nSelect */
 				AddSelect( pgdata, num );
 				/* second, call choice module */
 				ChoiceSelect( pgdata, num );
-                /* automatically shift the cursor to next phrase */
-                if ( pgdata->bAutoShiftCur!=0 &&
-                     /* if cursor at end of string, do not shift the cursor. */
-                     pgdata->chiSymbolCursor<pgdata->chiSymbolBufLen ) {
-                    int len = pgdata->availInfo.avail[ pgdata->availInfo.currentAvail ].len;
-                    pgdata->chiSymbolCursor += len;
-                    pgdata->cursor += len;
-                }
+				/* automatically shift the cursor to next phrase */
+				if ( pgdata->bAutoShiftCur != 0 &&
+				     /* if cursor at end of string, do not shift the cursor. */
+				     pgdata->chiSymbolCursor < pgdata->chiSymbolBufLen ) {
+					int len = pgdata->availInfo.avail[
+						pgdata->availInfo.currentAvail ].len;
+					pgdata->chiSymbolCursor += len;
+					pgdata->cursor += len;
+				}
 			}
 			return 1;
 		}
@@ -286,10 +292,12 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 	}
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
-		if( pgdata->bFullShape )
+		if ( pgdata->bFullShape ) {
 			rtn = FullShapeSymbolInput( ' ', pgdata );
-		else
+		}
+		else {
 			rtn = SymbolInput( ' ', pgdata );
+		}
 		pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ];
 		pgo->nCommitStr = 1;
 		pgdata->chiSymbolBufLen = 0;
@@ -303,24 +311,27 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 			bQuickCommit = 1;
 		}
 
-        if( pgdata->bFullShape )
+		if ( pgdata->bFullShape ) {
 			rtn = FullShapeSymbolInput( ' ', pgdata );
-		else
+		}
+		else {
 			rtn = SymbolInput( ' ', pgdata );
+		}
+
 		keystrokeRtn = KEYSTROKE_ABSORB;
-
-
 		if ( rtn == SYMBOL_KEY_ERROR ) {
 			keystrokeRtn = KEYSTROKE_IGNORE;
 			/*
 			 * If the key is not a printable symbol, 
-			 * then it's wrongto commit it.
+			 * then it's wrong to commit it.
 			 */
 			bQuickCommit = 0;
-		} else
+		} 
+		else {
 			keystrokeRtn = KEYSTROKE_ABSORB;
+		}
 
-        if ( ! bQuickCommit ) {
+		if ( ! bQuickCommit ) {
 			CallPhrasing( pgdata );
 			if( ReleaseChiSymbolBuf( pgdata, pgo ) != 0 )
 				keystrokeRtn = KEYSTROKE_COMMIT;
@@ -336,7 +347,8 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 			pgdata->chiSymbolCursor = 0;
 			keystrokeRtn = KEYSTROKE_COMMIT;
 		}
-	} else {
+	}
+	else {
 		rtn = ZuinPhoInput( &( pgdata->zuinData ), ' ' );
 		switch ( rtn ) {
 			case ZUIN_ABSORB:
@@ -351,9 +363,8 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 				break;
 			case ZUIN_KEY_ERROR:
 			case ZUIN_IGNORE:
-
 				key_buf_cursor = pgdata->chiSymbolCursor;
-				if( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen )
+				if ( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen )
 					key_buf_cursor--;
 
 				/* see if to select */
@@ -365,13 +376,12 @@ int OnKeySpace( void *iccf, ChewingOutput *pgo )
 						ChoiceFirstAvail( pgdata );
 					else
 						ChoiceNextAvail( pgdata );
-				} 
+				}
 				else if ( pgdata->symbolKeyBuf[ key_buf_cursor ] ) {
 					/* Open Symbol Choice List */
 					if( ! pgdata->choiceInfo.isSymbol )
 						OpenSymbolChoice( pgdata );
 				}
-
 				break;
 		}
 	}
@@ -389,7 +399,8 @@ int OnKeyEsc( void *iccf, ChewingOutput *pgo )
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
 		keystrokeRtn = KEYSTROKE_IGNORE;
-	} else if ( pgdata->bSelect ) {
+	}
+	else if ( pgdata->bSelect ) {
 		if ( pgdata->choiceInfo.isSymbol != 0 ) {
 		/* TODO: this should be checked again. */
 /*			ChewingKillChar(
@@ -400,9 +411,11 @@ int OnKeyEsc( void *iccf, ChewingOutput *pgo )
 */
 		}
 		ChoiceEndChoice( pgdata );
-	} else if ( ZuinIsEntering( &( pgdata->zuinData ) ) ) {
+	}
+	else if ( ZuinIsEntering( &( pgdata->zuinData ) ) ) {
 		ZuinRemoveAll( &( pgdata->zuinData ) );
-	} else if( pgdata->config.bEscCleanAllBuf ) {
+	}
+	else if ( pgdata->config.bEscCleanAllBuf ) {
 		CleanAllBuf( pgdata );
 	}
 
@@ -418,22 +431,26 @@ int OnKeyEnter( void *iccf, ChewingOutput *pgo )
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
 		keystrokeRtn = KEYSTROKE_IGNORE;
-	} else if ( pgdata->bSelect ) {
+	}
+	else if ( pgdata->bSelect ) {
 		keystrokeRtn = KEYSTROKE_ABSORB | KEYSTROKE_BELL;
-	} else if ( pgdata->PointStart > -1) {
+	}
+	else if ( pgdata->PointStart > -1 ) {
 		int buf = pgdata->cursor;
 		int key;
 		if ( pgdata->PointEnd > 0 ) {
-			if ( !pgdata->config.bAddPhraseForward ) {
+			if ( ! pgdata->config.bAddPhraseForward ) {
 				pgdata->cursor = pgdata->PointStart;
 				key = '0' + pgdata->PointEnd;
-			} else {
+			}
+			else {
 				pgdata->cursor = pgdata->PointStart + pgdata->PointEnd;
 				key = '0' + pgdata->PointEnd;
 			}
 			OnKeyCtrlNum( (void *) pgdata, key, pgo );
 			pgdata->cursor = buf;
-		} else if ( pgdata->PointEnd < 0 ) {
+		}
+		else if ( pgdata->PointEnd < 0 ) {
 			if ( pgdata->config.bAddPhraseForward )
 				pgdata->cursor = buf - pgdata->PointEnd;
 			key = '0' - pgdata->PointEnd;
@@ -442,7 +459,8 @@ int OnKeyEnter( void *iccf, ChewingOutput *pgo )
 		}
 		pgdata->PointStart = -1;
 		pgdata->PointEnd = 0;
-	} else {
+	}
+	else {
 		keystrokeRtn = KEYSTROKE_COMMIT;
 		WriteChiSymbolToBuf( pgo->commitStr, nCommitStr, pgdata );
 #ifdef WIN32
@@ -451,7 +469,6 @@ int OnKeyEnter( void *iccf, ChewingOutput *pgo )
 #endif
 		AutoLearnPhrase( pgdata );
 		CleanAllBuf( pgdata );  
-		//CallPhrasing( pgdata );
 		pgo->nCommitStr = nCommitStr;
 	}
 
@@ -545,9 +562,9 @@ int OnKeyDown( void *iccf, ChewingOutput *pgo )
 	if ( ! ChewingIsEntering( pgdata ) ) {
 		keystrokeRtn = KEYSTROKE_IGNORE;
 	}
-	
+
 	key_buf_cursor = pgdata->chiSymbolCursor;
-	if( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen )
+	if ( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen )
 		key_buf_cursor--;
 
 	/* see if to select */
@@ -557,12 +574,14 @@ int OnKeyDown( void *iccf, ChewingOutput *pgo )
 	if ( toSelect ) {
 		if( ! pgdata->bSelect ) {
 			ChoiceFirstAvail( pgdata );
-		} else {
+		}
+		else {
 			ChoiceNextAvail( pgdata );
 		}
-	} else if ( pgdata->symbolKeyBuf[ key_buf_cursor ] ) {
+	} 
+	else if ( pgdata->symbolKeyBuf[ key_buf_cursor ] ) {
 		/* Open Symbol Choice List */
-		if( ! pgdata->choiceInfo.isSymbol )
+		if ( ! pgdata->choiceInfo.isSymbol )
 			OpenSymbolChoice( pgdata );
 	}
 
@@ -577,14 +596,14 @@ int OnKeyShiftLeft( void *iccf, ChewingOutput *pgo )
 	int keystrokeRtn = KEYSTROKE_ABSORB ;
 
 	if ( ! ChewingIsEntering( pgdata ) ) {
-		keystrokeRtn = KEYSTROKE_IGNORE ;
+		keystrokeRtn = KEYSTROKE_IGNORE;
 	} 
-	if(!pgdata->bSelect ) {
+	if ( ! pgdata->bSelect ) {
 		/*  PointEnd locates (-9, +9) */
 		if ( 
 			! ZuinIsEntering( &( pgdata->zuinData ) ) && 
-			pgdata->chiSymbolCursor > 0
-			&& pgdata->PointEnd > -9 ) {
+			pgdata->chiSymbolCursor > 0 &&
+			pgdata->PointEnd > -9 ) {
 			pgdata->chiSymbolCursor--;
 			if ( pgdata->PointStart == -1 )
 				pgdata->PointStart = pgdata->cursor;
@@ -640,11 +659,11 @@ int OnKeyShiftRight(void *iccf, ChewingOutput *pgo)
 	ChewingData *pgdata = (ChewingData *)iccf ;
 	int keystrokeRtn = KEYSTROKE_ABSORB ;
 
-	if( ! ChewingIsEntering(pgdata)) {
-		keystrokeRtn = KEYSTROKE_IGNORE ;
+	if ( ! ChewingIsEntering( pgdata ) ) {
+		keystrokeRtn = KEYSTROKE_IGNORE;
 	} 
 
-	if( ! pgdata->bSelect) {
+	if ( ! pgdata->bSelect ) {
 		/* PointEnd locates (-9, +9) */
 		if ( 
 			! ZuinIsEntering( &( pgdata->zuinData ) ) && 
@@ -713,8 +732,8 @@ int OnKeyTab( void *iccf, ChewingOutput *pgo )
 
 
 	if ( ! pgdata->bSelect ) {
-		if( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen ) {
-			pgdata->phrOut.nNumCut ++;
+		if ( pgdata->chiSymbolCursor == pgdata->chiSymbolBufLen ) {
+			pgdata->phrOut.nNumCut++;
 		}
 		else if ( ChewingIsChiAt( pgdata->chiSymbolCursor - 1, pgdata ) ) {
 			if ( IsPreferIntervalConnted( pgdata->cursor, pgdata) ) {
@@ -834,7 +853,8 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 	int rtn, num;
 	int keystrokeRtn = KEYSTROKE_ABSORB;
 	int bQuickCommit = 0;
-	
+
+	/* Update lifetime */
 	chewing_lifetime++;
 
 	/* Skip the special key */
@@ -910,23 +930,25 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 	/* editing */
 	else {
 		if ( pgdata->bChiSym == CHINESE_MODE ) {
-			if ( pgdata->bEasySymbolInput!=0 ) {
-				EasySymbolInput(key, pgdata, pgo);
+			if ( pgdata->bEasySymbolInput != 0 ) {
+				EasySymbolInput( key, pgdata, pgo );
 				goto End_keyproc;
 			}
+
 			/* open symbol table */
-			if( key == '`' ) {
+			if ( key == '`' ) {
 				pgdata->bSelect = 1;
 				pgdata->choiceInfo.oldChiSymbolCursor = pgdata->chiSymbolCursor;
 				pgdata->choiceInfo.oldCursor = pgdata->cursor;
 
 				HaninSymbolInput(
-					&( pgdata->choiceInfo ), 
-					&( pgdata->availInfo ), 
-					pgdata->phoneSeq, 
-					pgdata->config.candPerPage ); 
+					&( pgdata->choiceInfo ),
+					&( pgdata->availInfo ),
+					pgdata->phoneSeq,
+					pgdata->config.candPerPage );
 				goto End_Paging;
 			}
+
 			rtn = ZuinPhoInput( &( pgdata->zuinData ), key );
 			DEBUG_OUT(
 				"\t\tchinese mode key, "
@@ -964,8 +986,8 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 						bQuickCommit = 1;
 					}
 
-					if ( pgdata->bEasySymbolInput==0 ) {
-						if( pgdata->bFullShape )
+					if ( pgdata->bEasySymbolInput == 0 ) {
+						if ( pgdata->bFullShape )
 							rtn = FullShapeSymbolInput( key, pgdata );
 						else
 							rtn = SymbolInput( key, pgdata );
@@ -975,10 +997,11 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 						keystrokeRtn = KEYSTROKE_IGNORE;
 						/*
 						 * If the key is not a printable symbol, 
-						 * then it's wrongto commit it.
+						 * then it's wrong to commit it.
 						 */
 						bQuickCommit = 0;
-					} else
+					}
+					else
 						keystrokeRtn = KEYSTROKE_ABSORB;
 
 					break;
@@ -991,13 +1014,13 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 			if ( pgdata->chiSymbolBufLen == 0 ) {
 				bQuickCommit = 1;
 			}
-
 			if ( pgdata->bFullShape ) {
 				rtn = FullShapeSymbolInput( key, pgdata );
 			}
 			else {
 				rtn = SymbolInput( key, pgdata );
 			}
+
 			if ( rtn == SYMBOL_KEY_ERROR ) {
 				keystrokeRtn = KEYSTROKE_IGNORE;
 				bQuickCommit = 0;
@@ -1008,25 +1031,26 @@ int OnKeyDefault( void *iccf, int key, ChewingOutput *pgo )
 End_keyproc:
 	if ( ! bQuickCommit ) {
 		CallPhrasing( pgdata );
-		if( ReleaseChiSymbolBuf( pgdata, pgo ) != 0 )
+		if ( ReleaseChiSymbolBuf( pgdata, pgo ) != 0 )
 			keystrokeRtn = KEYSTROKE_COMMIT;
 	}
 	/* Quick commit */
 	else {
 		DEBUG_OUT(
-			"\t\tQuick commit buf[0]=%c\n", 
-			pgdata->chiSymbolBuf[ 0 ].s[ 0 ] );
+				"\t\tQuick commit buf[0]=%c\n", 
+				pgdata->chiSymbolBuf[ 0 ].s[ 0 ] );
 		pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ]; 
 		pgo->nCommitStr = 1;
 		pgdata->chiSymbolBufLen = 0;
 		pgdata->chiSymbolCursor = 0;
 		keystrokeRtn = KEYSTROKE_COMMIT;
 	}
-	if( pgdata->phrOut.nNumCut > 0 ) {
+
+	if ( pgdata->phrOut.nNumCut > 0 ) {
 		int i;
 		for ( i = 0; i < pgdata->phrOut.nDispInterval; i++ ) {
-			pgdata->bUserArrBrkpt[ pgdata->phrOut.dispInterval[i].from ] = 1;
-			pgdata->bUserArrBrkpt[ pgdata->phrOut.dispInterval[i].to ] = 1;
+			pgdata->bUserArrBrkpt[ pgdata->phrOut.dispInterval[ i ].from ] = 1;
+			pgdata->bUserArrBrkpt[ pgdata->phrOut.dispInterval[ i ].to ] = 1;
 		}
 		pgdata->phrOut.nNumCut = 0;
 	}
@@ -1045,7 +1069,7 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 	int newPhraseLen;
 	int i;
 	uint16 addPhoneSeq[ MAX_PHONE_SEQ_LEN ];
-	char addWordSeq[ MAX_PHONE_SEQ_LEN * 3 + 1 ];
+	char addWordSeq[ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ];
 	int phraseState;
 
 	CheckAndResetRange( pgdata );
@@ -1056,7 +1080,8 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 	if ( ( key == '0' || key == '1') ) {
         return 0;
 	}
-	if ( ! pgdata->config.bAddPhraseForward ) {
+
+        if ( ! pgdata->config.bAddPhraseForward ) {
 		if ( 
 			newPhraseLen >= 1 && 
 			pgdata->cursor + newPhraseLen - 1 <= pgdata->nPhoneSeq ) {
@@ -1065,16 +1090,14 @@ int OnKeyCtrlNum( void *iccf, int key, ChewingOutput *pgo )
 				pgdata->cursor, 
 				pgdata->cursor + newPhraseLen - 1 ) ) {
 				/* Manually add phrase to the user phrase database. */
-				memcpy(
-					addPhoneSeq,
-					&pgdata->phoneSeq[ pgdata->cursor ],
-					sizeof( uint16 ) * newPhraseLen );
+				memcpy( addPhoneSeq,
+				        &pgdata->phoneSeq[ pgdata->cursor ],
+				        sizeof( uint16 ) * newPhraseLen );
 				addPhoneSeq[ newPhraseLen ] = 0;
-				ueStrNCpy(
-						addWordSeq,
-						ueStrSeek( (char *) &pgdata->phrOut.chiBuf,
-							pgdata->cursor ),
-						newPhraseLen, 1);
+				ueStrNCpy( addWordSeq,
+				           ueStrSeek( (char *) &pgdata->phrOut.chiBuf,
+				                      pgdata->cursor ),
+				           newPhraseLen, 1);
 
 
 				phraseState = UserUpdatePhrase( addPhoneSeq, addWordSeq );
@@ -1176,20 +1199,21 @@ int OnKeyNumlock( void *iccf, int key, ChewingOutput *pgo )
 		/* copied from OnKey Default */
 		if ( rtn == SYMBOL_KEY_ERROR ) {
 			keystrokeRtn = KEYSTROKE_IGNORE ;
-		} else if ( QuickCommit ) {
+		}
+		else if ( QuickCommit ) {
 			pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ]; 
 			pgo->nCommitStr = 1;
 			pgdata->chiSymbolBufLen = 0;
 			pgdata->chiSymbolCursor = 0;
 			keystrokeRtn = KEYSTROKE_COMMIT;
 		}
-		else	/* Not quick commit */
-		{
+		else {	/* Not quick commit */
 			CallPhrasing( pgdata );
 			if( ReleaseChiSymbolBuf( pgdata, pgo ) != 0 )
 				keystrokeRtn = KEYSTROKE_COMMIT;
 		}
-	} else {
+	}
+	else {
 		/* Otherwise, if we are selecting words, we use numeric keys
 		 * as selkey
 		 * and submit the words. 

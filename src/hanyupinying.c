@@ -1,7 +1,7 @@
 /**
  * hanyupinying.c
  *
- * Copyright (c) 2005
+ * Copyright (c) 2005, 2006
  *      libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -21,12 +21,12 @@
  according to http://humanum.arts.cuhk.edu.hk/Lexis/Lindict/syllabary/
        http://cls.admin.yzu.edu.tw/pronounce.htm
  */
-PinYingZuinMap *hanyuCommonInitialsMap, *hanyuCommonFinalsMap, *hanyuSpecialsMap;
+PinYinZuinMap *hanyuCommonInitialsMap, *hanyuCommonFinalsMap, *hanyuSpecialsMap;
 int HANYU_COMMONINITIALS, HANYU_COMMONFINALS, HANYU_SPECIALS, INIT_FLAG = 0;
 
-static PinYingZuinMap* CommonInitialsMap()
+static PinYinZuinMap* CommonInitialsMap()
 {
-	static PinYingZuinMap map[] = {
+	static PinYinZuinMap map[] = {
 		{"zh","5"}, {"ch","t"}, {"sh","g"},
 		{"b","1"}, {"p","q"}, {"m","a"}, {"f","z"},
 		{"d","2"}, {"t","w"}, {"n","s"}, {"l","x"},
@@ -38,9 +38,9 @@ static PinYingZuinMap* CommonInitialsMap()
 	return map;
 }
 
-static PinYingZuinMap* CommonFinalsMap()
+static PinYinZuinMap* CommonFinalsMap()
 {
-	static PinYingZuinMap map[] = {
+	static PinYinZuinMap map[] = {
 		{"uang","j;"},
 		{"iang","u;"}, {"iong","m/"},
 		{"iao","ul"}, {"ian","u0"}, {"ing","u/"},
@@ -70,9 +70,9 @@ static PinYingZuinMap* CommonFinalsMap()
       return map;
 }
 
-static PinYingZuinMap* SpecialsMap()
+static PinYinZuinMap* SpecialsMap()
 {
-	static PinYingZuinMap map[] = {
+	static PinYinZuinMap map[] = {
 		{"wang","j;"}, {"weng","j/"},
 		{"yang","u;"}, {"ying","u/"}, {"yong","m/"},
 		{"yuan","m0"},
@@ -115,14 +115,14 @@ static void InitMap()
 	hanyuCommonFinalsMap = CommonFinalsMap();
 }
 
-static int pinying_lookup(PinYingZuinMap *table,
+static int pinyin_lookup(PinYinZuinMap *table,
 			  int table_size,
 			  char *target)
 {
 	char	*p;
 	int	i;
 	for ( i = 0; i < table_size; i++ ) {
-		p = strstr( target, table[ i ].pinying );
+		p = strstr( target, table[ i ].pinyin );
 		if ( p == target ) {
 			return	i;
 		}
@@ -138,7 +138,7 @@ static int pinying_lookup(PinYingZuinMap *table,
  Map pinyin key-sequence to Zuin key-sequence.
  Caller should allocate char zuin[4].
  */
-int HanyuPinYingToZuin( char *pinyingKeySeq, char *zuinKeySeq )
+int HanyuPinYinToZuin( char *pinyinKeySeq, char *zuinKeySeq )
 {
 	/*
 	* pinyinKeySeq[] should have at most 6 letters (Shuang)
@@ -152,31 +152,31 @@ int HanyuPinYingToZuin( char *pinyingKeySeq, char *zuinKeySeq )
 		INIT_FLAG = 1;
 	}
 
-	i = pinying_lookup(hanyuSpecialsMap,
+	i = pinyin_lookup(hanyuSpecialsMap,
 			  HANYU_SPECIALS,
-			  pinyingKeySeq);
+			  pinyinKeySeq);
 	if ( i != HANYU_SPECIALS ) {
 		initial = hanyuSpecialsMap[ i ].zuin;
 		final="\0";
 	}
 	else {
-		i = pinying_lookup(hanyuCommonInitialsMap,
-			  HANYU_COMMONINITIALS, pinyingKeySeq);
+		i = pinyin_lookup(hanyuCommonInitialsMap,
+			  HANYU_COMMONINITIALS, pinyinKeySeq);
 		if ( i == HANYU_COMMONINITIALS ) {
 			return	1;
 		}
 
 		initial = hanyuCommonInitialsMap[ i ].zuin;
-		cursor = pinyingKeySeq +
-			strlen( hanyuCommonInitialsMap[ i ].pinying );
+		cursor = pinyinKeySeq +
+			strlen( hanyuCommonInitialsMap[ i ].pinyin );
 		
-		j = pinying_lookup(hanyuCommonFinalsMap,
+		j = pinyin_lookup(hanyuCommonFinalsMap,
 			  HANYU_COMMONFINALS, cursor);
 		if ( j != HANYU_COMMONFINALS ) {
 			final = hanyuCommonFinalsMap[ j ].zuin;
 		}
 	}
-
+	
 	if (	!strcmp( final, "j0" ) ||
 		!strcmp( final, "jp" ) ||
 		!strcmp( final, "j" ) ) {
@@ -186,9 +186,7 @@ int HanyuPinYingToZuin( char *pinyingKeySeq, char *zuinKeySeq )
 			final[0] = 'm';
 		}
 	}
-
+	
 	sprintf( zuinKeySeq, "%s%s\0", initial, final );
 	return 0;
 }
-
-

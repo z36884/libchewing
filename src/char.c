@@ -5,7 +5,7 @@
  *	Lu-chuan Kung and Kang-pen Chen.
  *	All rights reserved.
  *
- * Copyright (c) 2004
+ * Copyright (c) 2004, 2005, 2006
  *	libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -23,15 +23,8 @@
 
 #include "char.h"
 #include "private.h"
+#include "plat_mmap.h"
 
-#ifdef WIN32
-	#include <windows.h>
-#else
-	#include <unistd.h>
-#endif
-
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #ifdef	USE_BINARY_DAT
 	static uint16* arrPhone = NULL;
@@ -81,11 +74,6 @@ static void TerminateChar()
 
 int InitChar( const char *prefix )
 {
-#ifndef	WIN32
-	const char* DIRPATH_SEP_FILENAME = "%s/%s";
-#else
-	const char* DIRPATH_SEP_FILENAME = "%s\\%s";
-#endif
 
 	char filename[ 100 ];
 
@@ -104,10 +92,10 @@ int InitChar( const char *prefix )
 	#endif
 #endif	/* USE_BINARY_DAT */
 
-	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, CHAR_FILE );
+	sprintf( filename, "%s" PLAT_SEPARATOR "%s", prefix, CHAR_FILE );
 	dictfile = fopen( filename, "r" );
 
-	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, CHAR_INDEX_FILE );
+	sprintf( filename, "%s" PLAT_SEPARATOR "%s", prefix, CHAR_INDEX_FILE );
 
 #ifdef	USE_BINARY_DAT
 	#ifdef WIN32

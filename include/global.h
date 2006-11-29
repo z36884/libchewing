@@ -5,7 +5,7 @@
  *	Lu-chuan Kung and Kang-pen Chen.
  *	All rights reserved.
  *
- * Copyright (c) 2004, 2005
+ * Copyright (c) 2004, 2005, 2006
  *	libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -37,14 +37,17 @@
 #define MAX_SELKEY 10
 #define TREE_SIZE (153341)
 #define WCH_SIZE 4
-#define MAX_UTF8_SIZE   6
+#define MAX_UTF8_SIZE 6
 #define ZUIN_SIZE 4
-#define PINYING_SIZE 10
+#define PINYIN_SIZE 10
 #define MAX_PHRASE_LEN 10
 #define MAX_PHONE_SEQ_LEN 50
 #define MAX_INTERVAL ( ( MAX_PHONE_SEQ_LEN + 1 ) * MAX_PHONE_SEQ_LEN / 2 )
 #define MAX_CHOICE (567)
 #define MAX_CHOICE_BUF (50)                   /* max length of the choise buffer */
+
+/* specified to Chewing API */
+#define CHEWING_API
 
 #ifndef max
 #define max(a, b) \
@@ -64,7 +67,7 @@ typedef struct {
 } ChewingConf;
 
 typedef union {
-	unsigned char s[ WCH_SIZE ];
+	unsigned char s[ MAX_UTF8_SIZE + 1];
 	wchar_t wch;
 } wch_t;
 
@@ -87,14 +90,14 @@ typedef struct {
 
 typedef struct {
     int type;
-    char keySeq[ PINYING_SIZE ];
-} PinYingData;
+    char keySeq[ PINYIN_SIZE ];
+} PinYinData;
 
 typedef struct {
 	int kbtype;
 	int pho_inx[ ZUIN_SIZE ];
 	uint16 phone;
-	PinYingData pinYingData;
+	PinYinData pinYinData;
 } ZuinData;
 
 typedef struct {
@@ -130,25 +133,23 @@ typedef struct {
 } ChoiceInfo;
 
 /** @brief entry of symbol table */
-typedef struct {
-	/*
-		nSymnols is total number of symbols in this category.
-		If nSymbols = 0, category is treat as a symbol, 
-		which is a zero-terminated utf-8 string.
-		In that case, symbols[] is unused and isn't allocated at all.
-	*/
+typedef struct _SymbolEntry {
+	/** @brief  nSymnols is total number of symbols in this category.
+	 * If nSymbols = 0, category is treat as a symbol, 
+	 * which is a zero-terminated utf-8 string. 
+	 * In that case, symbols[] is unused and isn't allocated at all.
+	 */
 	int nSymbols;
 
-	/* Category name of these symbols */
-	char category[MAX_PHRASE_LEN * MAX_UTF8_SIZE + 1];
+	/** @brief  Category name of these symbols */
+	char category[ MAX_PHRASE_LEN * MAX_UTF8_SIZE + 1 ];
 
-	/*
-		Symbols in this category.
-		This is an char[] array of variable length.
-		When nSymbols = 0, this array is not allocated.
-	*/
-	char symbols[1][ MAX_UTF8_SIZE + 1 ];
-}SymbolEntry;
+	/** @brief  Symbols in this category.
+	 * This is an char[] array of variable length.
+	 * When nSymbols = 0, this array is not allocated.
+	 */
+	char symbols[ 1 ][ MAX_UTF8_SIZE + 1 ];
+} SymbolEntry;
 
 /** @brief use "asdfjkl789" as selection key */
 #define HSU_SELKEY_TYPE1 1
@@ -156,7 +157,6 @@ typedef struct {
 #define HSU_SELKEY_TYPE2 2
 
 typedef struct {
-	//int selectAreaLen;
 	int candPerPage;
 	int maxChiSymbolLen;
 	int selKey[ MAX_SELKEY ];
@@ -188,7 +188,7 @@ typedef struct {
 	uint16 phoneSeq[ MAX_PHONE_SEQ_LEN ];
 	int nPhoneSeq;
 	int cursor;
-	char selectStr[ MAX_PHONE_SEQ_LEN ][ MAX_PHONE_SEQ_LEN * 3 + 1 ];
+	char selectStr[ MAX_PHONE_SEQ_LEN ][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ];
 	IntervalType selectInterval[ MAX_PHONE_SEQ_LEN ];
 	int nSelect;
 	IntervalType preferInterval[ MAX_INTERVAL ]; /* add connect points */
@@ -199,7 +199,7 @@ typedef struct {
 	int bSymbolArrBrkpt[ MAX_PHONE_SEQ_LEN + 1 ];
 	/* "bArrBrkpt[10]=True" means "it breaks between 9 and 10" */
 	int bChiSym, bSelect, bCaseChange, bFirstKey, bFullShape, bAutoShiftCur, bEasySymbolInput;
-	/* Symbol Key Buf */
+	/* Symbol Key buffer */
 	char symbolKeyBuf[ MAX_PHONE_SEQ_LEN ];
 } ChewingData;
 
@@ -240,7 +240,7 @@ typedef struct {
  */
 
 typedef struct {
-	char phrase[ MAX_PHRASE_LEN * 3 + 1 ];
+	char phrase[ MAX_PHRASE_LEN * MAX_UTF8_SIZE + 1 ];
 	int freq;
 } Phrase;
 
@@ -251,11 +251,10 @@ typedef struct {
 
 /* tree.c */
 int Phrasing( PhrasingOutput *ppo, uint16 phoneSeq[], int nPhoneSeq, 
-		char selectStr[][ MAX_PHONE_SEQ_LEN * 3 + 1 ], 
+		char selectStr[][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ], 
 		IntervalType selectInterval[], int nSelect, 
 		int bArrBrkpt[], int bUserArrCnnct[] );
-int IsContain( IntervalType, IntervalType );
-int IsIntersect( IntervalType, IntervalType );
+int IsIntersect( IntervalType in1, IntervalType in2 );
 void ReadTree( const char * );
 int TreeFindPhrase( int begin, int end, const uint16 *phoneSeq );
 

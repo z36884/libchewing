@@ -5,7 +5,7 @@
  *	Lu-chuan Kung and Kang-pen Chen.
  *	All rights reserved.
  *
- * Copyright (c) 2004
+ * Copyright (c) 2004, 2006
  *	libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -26,7 +26,7 @@ extern int chewing_lifetime;
 static HASH_ITEM *pItemLast;
 
 #if 0
-int DeltaFreq( int recentTime )
+static int DeltaFreq( int recentTime )
 {
 	int diff;
 
@@ -57,7 +57,7 @@ static int LoadOriginalFreq( const uint16 phoneSeq[], const char wordSeq[], int 
 			if ( ! memcmp( 
 				phrase->phrase, 
 				wordSeq, 
-				len * 3 * sizeof( char ) ) ) { 
+				len * MAX_UTF8_SIZE * sizeof( char ) ) ) { 
 				retval = phrase->freq;	
 				free( phrase );
 				return retval;
@@ -133,12 +133,14 @@ static int UpdateFreq( int freq, int maxfreq, int origfreq, int deltatime )
 
 int UserUpdatePhrase( const uint16 phoneSeq[], const char wordSeq[] )
 {
+	HASH_ITEM *pItem;
 	UserPhraseData data;
-	int len = ueStrLen( (char *) wordSeq );
-	HASH_ITEM *pItem = HashFindEntry( phoneSeq, wordSeq );
+	int len;
 
+	len = ueStrLen( (char *) wordSeq );
+	pItem = HashFindEntry( phoneSeq, wordSeq );
 	if ( ! pItem ) {
-		if ( ! AlcUserPhraseSeq( &data, len, strlen(wordSeq)) ) {
+		if ( ! AlcUserPhraseSeq( &data, len, strlen( wordSeq ) ) ) {
 			return USER_UPDATE_FAIL;
 		}
 

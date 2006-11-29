@@ -11,7 +11,6 @@
  * See the file "COPYING" for information on usage and redistribution
  * of this file.
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,7 +51,6 @@ int DoWord( char *buf )
 
 	memset( phoneInx, 0, sizeof( phoneInx ) );
 	sscanf( buf, "%s %s", keyBuf, word_data[ nWord ].word );
-	
 	if ( strlen( keyBuf ) > ZUIN_SIZE )
 		return DO_WORD_ERROR;
 

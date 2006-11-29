@@ -5,7 +5,7 @@
  *	Lu-chuan Kung and Kang-pen Chen.
  *	All rights reserved.
  *
- * Copyright (c) 2004
+ * Copyright (c) 2004, 2006
  *	libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -82,31 +82,20 @@ void SetNewline2Zero( long index )
 void DataStripSpace( long index )
 {
 	long i, k = 0;
-	char old[ MAXLEN ];
-	char last = ' ';
-	/*  CHECK-HERE: 
-		char last = '\0';
-		hialan: Default should be ' ' ?
-				If the first charactor of line in tsi.src is ' ',
-				then it should be ignore?
-	*/
+	char old[ MAXLEN ], last = ' ';
+		/* If the first charactor of line in tsi.src is ' ',
+		 * then it should be ignore? 
+		 */
+
 	strcpy( old, data[ index ].str );
 	for ( i = 0; old[ i ]; i++ ) {
-
-		// trans '\t' to ' ' , easy for process.
-		if( old[ i ] == '\t')
+		/* trans '\t' to ' ' , easy for process. */
+		if ( old[ i ] == '\t' )
 			old[ i ] = ' ';
-
 		if ( old[ i ] == ' ' && last == ' ' )
 			continue;
-		//
-		// ADD patch from pofeng@gmail.com
-		//		'#' comment in tsi.src
-		//
-		// Ex: abcde # comment after data
-		//
-		if ( old[ i ] == '#')
-		{
+		/* Ignore '#' comment in tsi.src */
+		if ( old[ i ] == '#') {
 			data[ index ].str[ k++ ] = '\n';
 			break;
 		}
@@ -157,6 +146,7 @@ int main( int argc, char *argv[] )
 	else 
 		strcpy( in_file, argv[ 1 ] );
 #endif
+
 	infile = fopen( in_file, "r" );
 
 	if ( !infile ) {
@@ -175,16 +165,9 @@ int main( int argc, char *argv[] )
 
 	while ( fgets( data[ nData ].str, MAXLEN, infile ) ) {
 		DataStripSpace( nData );
-
-		//
-		// Add '#' comment for tsi.src
-		// 
-		// EX: # here is comment with first charactor '#'
-		//        # comment after some space
-		//
-		if( data[ nData ].str[0] == '\n')
+		/* Ignore '#' comment for tsi.src */
+		if ( data[ nData ].str[0] == '\n' )
 			continue;
-
 		DataSetNum( nData );
 		SetNewline2Zero( nData );
 		nData++;
@@ -208,8 +191,7 @@ int main( int argc, char *argv[] )
 			fprintf (treedata, "%hu ", data[ i ].num[ k ] );
 		fprintf( treedata, "0\n" );
 
-	} 
-
+	}
 	fclose( infile );
 	fclose( ph_index );
 	fclose( dictfile );

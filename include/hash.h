@@ -5,7 +5,7 @@
  *	Lu-chuan Kung and Kang-pen Chen.
  *	All rights reserved.
  *
- * Copyright (c) 2004
+ * Copyright (c) 2004, 2006
  *	libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -52,8 +52,8 @@ HASH_ITEM *HashFindEntry( const uint16 phoneSeq[], const char wordSeq[] );
 HASH_ITEM *HashInsert( UserPhraseData *pData );
 HASH_ITEM *HashFindPhonePhrase( const uint16 phoneSeq[], HASH_ITEM *pHashLast );
 void HashModify( HASH_ITEM *pItem );
-int AlcUserPhraseSeq( UserPhraseData *pData, int phonelen, int wordlen);
-int ReadHash( char *path );
+int AlcUserPhraseSeq( UserPhraseData *pData, int phonelen, int wordlen );
+int ReadHash( const char *path );
 void FreeHashTable( void );
 
 void HashItem2String(char *str, HASH_ITEM *pItem);

@@ -20,11 +20,11 @@
   Eg: Zhang -> {"zh","5"}, {"ang",";"}
  */
 typedef struct {
-	char pinying[ 5 ];
+	char pinyin[ 5 ];
 	char zuin[ 4 ];
-} PinYingZuinMap;
+} PinYinZuinMap;
 
-int HanyuPinYingToZuin( char *pinyingKeySeq, char *zuinKeySeq );
+int HanyuPinYinToZuin( char *pinyinKeySeq, char *zuinKeySeq );
 
 #endif /* _HANYUPINYING_H */
 

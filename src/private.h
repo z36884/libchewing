@@ -5,6 +5,9 @@
   #include <config.h>
 #endif
 
+/* Platform-dependent declaration */
+#include "plat_types.h"
+
 #ifdef ENABLE_DEBUG
 #include <stdarg.h>
 extern FILE *fp_g;
@@ -18,7 +21,7 @@ extern FILE *fp_g;
 		} \
 	} while (0)
 #define DEBUG_CHECKPOINT() \
-	DEBUG_OUT( "At %s %d\n", __FUNCTION__, __LINE__ )
+	DEBUG_OUT( "[ File: %s  Func: %s  Line: %d ]\n", __FILE__, __FUNCTION__, __LINE__ )
 #define DEBUG_FLUSH \
 	do { \
 		if ( fp_g ) { \
@@ -29,13 +32,13 @@ extern FILE *fp_g;
 	"\033[44;37m"real_string"\033[m"
 
 #else /* ! ENABLE_DEBUG */
-	#if _MSC_VER > 1000	// Vsual C++ compiler
-		__forceinline void DEBUG_OUT( char* str, ... ){	}
-	#else
-		#define DEBUG_OUT( ... )
-	#endif  /* _MSC_VER > 1000 */
-		#define DEBUG_FLUSH
-		#define DEBUG_CHECKPOINT()
+#if _MSC_VER > 1000     // Vsual C++ compiler
+__forceinline void DEBUG_OUT( char* str, ... ){ }
+#else
+#define DEBUG_OUT( ... )
+#endif /* _MSC_VER > 1000 */
+#define DEBUG_FLUSH
+#define DEBUG_CHECKPOINT()
 #endif
 
 #define ALC(type, size) \
