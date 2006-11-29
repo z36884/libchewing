@@ -5,7 +5,7 @@
  *	Lu-chuan Kung and Kang-pen Chen.
  *	All rights reserved.
  *
- * Copyright (c) 2004
+ * Copyright (c) 2004, 2005, 2006
  *	libchewing Core Team. See ChangeLog for details.
  *
  * See the file "COPYING" for information on usage and redistribution
@@ -18,6 +18,7 @@
  */
 
 #include <string.h>
+#include <assert.h>
 
 #include "chewing-utf8-util.h"
 #include "global.h"
@@ -29,12 +30,16 @@
 #define CEIL_DIV( a, b ) 	( ( a + b - 1 ) / b )
 
 #ifdef	USE_BINARY_DAT
-	TreeType *tree = NULL;
+TreeType *tree = NULL;
 #else
-	TreeType tree[ TREE_SIZE ];
+TreeType tree[ TREE_SIZE ];
 #endif
 
-void ChangeSelectIntervalAndBreakpoint( ChewingData *pgdata, int from, int to, char *str )
+static void ChangeSelectIntervalAndBreakpoint(
+		ChewingData *pgdata,
+		int from,
+		int to,
+		char *str )
 {
 	int i;
 	int user_alloc;
@@ -60,7 +65,6 @@ void ChangeSelectIntervalAndBreakpoint( ChewingData *pgdata, int from, int to, c
 	ueStrNCpy( pgdata->selectStr[ pgdata->nSelect ],
 			str,
 			user_alloc, 1);
-/*	pgdata->selectStr[ pgdata->nSelect ][ user_alloc * 2 * sizeof( char ) ] = '\0'; */
 	pgdata->nSelect++;
 
 	if ( user_alloc > 1 ) {
@@ -70,7 +74,7 @@ void ChangeSelectIntervalAndBreakpoint( ChewingData *pgdata, int from, int to, c
 }
 
 /** @brief Loading all possible phrases after the cursor from long to short into AvailInfo structure.*/
-void SetAvailInfo( 
+static void SetAvailInfo( 
 		AvailInfo *pai, const uint16 phoneSeq[], 
 		int nPhoneSeq, int begin, const int bSymbolArrBrkpt[] )
 {
@@ -111,7 +115,7 @@ void SetAvailInfo(
 	}
 }
 
-int ChoiceTheSame( ChoiceInfo *pci, char *str, int len )
+static int ChoiceTheSame( ChoiceInfo *pci, char *str, int len )
 {
 	int i;
 
@@ -127,8 +131,7 @@ int ChoiceTheSame( ChoiceInfo *pci, char *str, int len )
  *	   and dynamic dictionaries,\n
  *	   including number of total pages and the number of current page.\n
  */
-#include <assert.h>
-void SetChoiceInfo(
+static void SetChoiceInfo(
 		ChoiceInfo *pci,AvailInfo *pai, uint16 *phoneSeq, int cursor,
 		int candPerPage )
 {
@@ -168,7 +171,6 @@ void SetChoiceInfo(
 				}
 				ueStrNCpy( pci->totalChoiceStr[ pci->nTotalChoice ],
 						tempPhrase.phrase, len, 1);
-			/*	pci->totalChoiceStr[ pci->nTotalChoice ][ len * 2 ] = '\0';  */
 				pci->nTotalChoice++;
 			} while( GetPhraseNext( &tempPhrase ) );
 		}
@@ -189,7 +191,6 @@ void SetChoiceInfo(
 						pci->totalChoiceStr[ pci->nTotalChoice ],
 						pUserPhraseData->wordSeq,
 						len, 1);
-			/*	pci->totalChoiceStr[ pci->nTotalChoice ][ len * 2 ] = '\0';   */
 				pci->nTotalChoice++;
 			} while( ( pUserPhraseData = 
 				UserGetPhraseNext( userPhoneSeq ) ) != NULL );
@@ -270,17 +271,16 @@ int ChoiceEndChoice( ChewingData *pgdata )
 	pgdata->choiceInfo.nTotalChoice = 0;
 	pgdata->choiceInfo.nPage = 0;
 
-	if ( pgdata->choiceInfo.isSymbol != 1 ||
-		pgdata->choiceInfo.isSymbol != 2 ) {
+	if ( pgdata->choiceInfo.isSymbol != 1 || pgdata->choiceInfo.isSymbol != 2 ) {
 		/* return to the old cursor & chiSymbolCursor position */
 		pgdata->cursor = pgdata->choiceInfo.oldCursor;
 		pgdata->chiSymbolCursor = pgdata->choiceInfo.oldChiSymbolCursor;
-	} 
+	}
 	pgdata->choiceInfo.isSymbol = 0;
 	return 0;
 }
 
-void ChangeUserData( ChewingData *pgdata, int selectNo )
+static void ChangeUserData( ChewingData *pgdata, int selectNo )
 {
 	uint16 userPhoneSeq[ MAX_PHONE_SEQ_LEN ];
 	int len;
