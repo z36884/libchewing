@@ -69,11 +69,6 @@ static void TerminateDict()
 
 int InitDict( const char *prefix )
 {
-#ifndef	WIN32
-	const char* DIRPATH_SEP_FILENAME = "%s/%s";
-#else
-	const char* DIRPATH_SEP_FILENAME = "%s\\%s";
-#endif
 
 #ifndef	USE_BINARY_DAT
 	FILE* indexfile;
@@ -91,10 +86,10 @@ int InitDict( const char *prefix )
 
 	char filename[ 100 ];
 
-	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, DICT_FILE );
+	sprintf( filename, "%s" PLAT_SEPARATOR "%s", prefix, DICT_FILE );
 	dictfile = fopen( filename, "r" );
 
-	sprintf( filename, DIRPATH_SEP_FILENAME, prefix, PH_INDEX_FILE );
+	sprintf( filename, "%s" PLAT_SEPARATOR "%s", prefix, PH_INDEX_FILE );
 
 #ifdef	USE_BINARY_DAT
 	#ifdef WIN32 /* Win32 */

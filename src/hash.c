@@ -396,16 +396,15 @@ static int migrate_hash_to_bin( const char *ofilename )
 	};
 	fclose( txtfile );
 
-#ifdef WIN32
 	/* backup as *.old */
 	strncpy(oldname, ofilename, sizeof(oldname));
 	strncat(oldname, ".old", sizeof(oldname));
 	oldname[sizeof(oldname)-1] = '\0';
-	_unlink(oldname);
-	MoveFile(ofilename, oldname);
-#endif
+	PLAT_UNLINK( oldname );
+	PLAT_RENAME( ofilename, oldname );
+
 	/* dump new file */
-	_unlink(ofilename);
+	PLAT_UNLINK( ofilename );
 	txtfile = fopen(ofilename, "w+b");
 	fwrite(dump, seekdump-dump, 1, txtfile);
 	fflush(txtfile);
