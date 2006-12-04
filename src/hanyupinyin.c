@@ -21,7 +21,7 @@
  according to http://humanum.arts.cuhk.edu.hk/Lexis/Lindict/syllabary/
        http://cls.admin.yzu.edu.tw/pronounce.htm
  */
-PinYinZuinMap *hanyuCommonInitialsMap, *hanyuCommonFinalsMap, *hanyuSpecialsMap;
+const PinYinZuinMap *hanyuCommonInitialsMap, *hanyuCommonFinalsMap, *hanyuSpecialsMap;
 int HANYU_COMMONINITIALS, HANYU_COMMONFINALS, HANYU_SPECIALS, INIT_FLAG = 0;
 
 static PinYinZuinMap* CommonInitialsMap()
@@ -115,9 +115,9 @@ static void InitMap()
 	hanyuCommonFinalsMap = CommonFinalsMap();
 }
 
-static int pinyin_lookup(PinYinZuinMap *table,
+static int pinyin_lookup(const PinYinZuinMap *table,
 			  int table_size,
-			  char *target)
+			  const char *target)
 {
 	char	*p;
 	int	i;
@@ -144,7 +144,7 @@ int HanyuPinYinToZuin( char *pinyinKeySeq, char *zuinKeySeq )
 	* pinyinKeySeq[] should have at most 6 letters (Shuang)
 	* zuinKeySeq[] has at most 3 letters.
 	*/
-	char *p = 0, *cursor = 0, *initial = "", *final = "";
+	const char *p = 0, *cursor = 0, *initial = "", *final = "";
 	int i, j;
 
 	if ( ! INIT_FLAG ) {
@@ -177,14 +177,15 @@ int HanyuPinYinToZuin( char *pinyinKeySeq, char *zuinKeySeq )
 		}
 	}
 	
-	if (	!strcmp( final, "j0" ) ||
-		!strcmp( final, "jp" ) ||
-		!strcmp( final, "j" ) ) {
-		if (	!strcmp( initial, "r" ) ||
-			!strcmp( initial, "f" ) ||
-			!strcmp( initial, "v" ) ) {
-			final[0] = 'm';
-		}
+	if (!strcmp( initial, "r" ) ||
+		!strcmp( initial, "f" ) ||
+		!strcmp( initial, "v" ) ) {
+		if (!strcmp( final, "j0" ))
+			final = "m0";
+		else if (!strcmp( final, "jp" ))
+			final = "mp";
+		else if (!strcmp( final, "j" ))
+			final = "m";
 	}
 	
 	sprintf( zuinKeySeq, "%s%s\0", initial, final );
