@@ -6,7 +6,7 @@
 #endif
 
 /* Platform-dependent declaration */
-#include "plat_types.h"
+#include "porting_layer/include/plat_types.h"
 
 #ifdef ENABLE_DEBUG
 #include <stdarg.h>
