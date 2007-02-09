@@ -27,7 +27,7 @@
 #include "global.h"
 #include "zuin.h"
 #include "char.h"
-#include "hanyupinyin.h"
+#include "romanizations.h"
 #include "private.h"
 
 static int IsDvorakHsuPhoEndKey( int pho_inx[], int key )

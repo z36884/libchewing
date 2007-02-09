@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "hanyupinyin.h"
+#include "romanizations.h"
 #include "hash.h"
 #include "private.h"
 
