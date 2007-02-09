@@ -49,7 +49,7 @@ static PinYinZuinMap* CommonFinalsMap()
 		{"ong","j/"},
 		{"uai","j9"}, {"uan","j0"},
 		{"ia","u8"}, {"ie","u,"},
-		{"iu","u."}, {"in","up"},
+		{"iu","u."}, {"in","up"},{"io","ui"},
 		{"ua","j8"}, {"uo","ji"},
 		{"ui","jo"}, {"un","jp"},
 		{"ue","m,"},
@@ -80,6 +80,8 @@ static PinYinZuinMap* SpecialsMap()
 		{"zhi","5"}, {"chi","t"}, {"shi","g"},
 		{"yao","ul"}, {"you","u."},
 		{"yan","u0"}, {"yin","up"},
+		//only for taiwan
+		{"yai","u9"},
 		{"wai","j9"}, {"wei","jo"},
 		{"wan","j0"}, {"wen","jp"},
 		{"yue","m,"}, {"yun","mp"},
@@ -91,6 +93,8 @@ static PinYinZuinMap* SpecialsMap()
 		{"an","0"},
 		{"en","p"},
 		{"yi","u"}, {"ya","u8"}, {"ye","u,"},
+		//only for taiwan
+		{"yo","ui"},
 		{"wu","j"}, {"wa","j8"}, {"wo","ji"},
 		{"yu","m"},
 		//special for hamyupinyin-£z£º £{£º
