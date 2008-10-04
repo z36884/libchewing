@@ -1,9 +1,10 @@
-IMID=OVIMTobacco
-SOURCES=OVIMTobacco PredictorSingleton DictionarySingleton\
-    Token Vocabulary Candidate BiGram
-DATA=imtables.db tsi.db
-CINS=bpmf_punctuation.cin
-LDFLAGS+=-lsqlite3
+IMID = OVIMTobacco
+SOURCES = \
+	OVIMTobacco PredictorSingleton DictionarySingleton \
+	Token Vocabulary Candidate BiGram
+DATA = imtables.db tsi.db
+CINS = bpmf_punctuation.cin
+LDFLAGS += -lsqlite3
 
 include Mk/ov.os.mk
 include Mk/ov.im.mk

@@ -1,3 +1,7 @@
+2008-10-05  Jim Huang  <jserv.tw@gmail.com>
+
+	* OVIMTobacco.cpp: Fix UNIX build.
+
 2005-10-31  Jim Huang  <jserv@kaffe.org>
 
 	* tobacco-sqlconvert_general.pl,

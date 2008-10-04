@@ -19,6 +19,7 @@
 #ifndef WIN32
 	//#include <sys/syslimits.h>	//for PATH_MAX
 	#include <unistd.h>
+	#include <limits.h>
 #else
 	#include <windows.h>
 	#define PATH_MAX MAX_PATH
