@@ -69,35 +69,22 @@ void SetUpdatePhraseMsg(
 		ChewingData *pgdata, char *addWordSeq,
 		int len, int state )
 {
-	char *insert = "\xE5\x8A\xA0\xE5\x85\xA5\xEF\xBC\x9A";
-		/* 加入： */
-	char *modify = "\xE5\xB7\xB2\xE6\x9C\x89\xEF\xBC\x9A";
-		/* 已有： */
+	/* 加入： */
+	uint32_t insert[] = { 0x52A0, 0x5165, 0xFF1A };
+	/* 已有： */
+	uint32_t modify[] = { 0x5DF2, 0x6709, 0xFF1A };
 	int begin = 3, i;
 
 	pgdata->showMsgLen = begin + len;
 	if ( state == USER_UPDATE_INSERT ) {
-		ueStrNCpy( (char *) pgdata->showMsg[ 0 ].s, insert, 1, 1 );
-		ueStrNCpy( (char *) pgdata->showMsg[ 1 ].s,
-		           ueStrSeek( insert, 1 ), 
-		           1, 1 );
-		ueStrNCpy( (char *) pgdata->showMsg[ 2 ].s,
-		           ueStrSeek( insert, 2 ), 
-		           1, 1 );
+		memcpy( pgdata->showMsg, insert, sizeof(insert) );
 	}
 	else {
-		ueStrNCpy( (char *) pgdata->showMsg[ 0 ].s, modify, 1, 1 );
-		ueStrNCpy( (char *) pgdata->showMsg[ 1 ].s,
-		           ueStrSeek( modify, 1 ),
-			   1, 1 );
-		ueStrNCpy( (char *) pgdata->showMsg[ 2 ].s,
-		           ueStrSeek( modify, 2 ),
-			   1, 1 );
+		memcpy( pgdata->showMsg, modify, sizeof(modify) );
 	}
 	for ( i = 0; i < len; i++ ) {
-		ueStrNCpy( (char *) pgdata->showMsg[ begin + i ].s,
-		           ueStrSeek( addWordSeq, i ),
-			   1, 1);
+		pgdata->showMsg[ begin + i ] =
+			u8tou32( ueStrSeek( addWordSeq, i ) );
 	}
 }
 
@@ -987,7 +974,8 @@ int MakeOutputWithRtn( ChewingOutput *pgo, ChewingData *pgdata, int keystrokeRtn
 void MakeOutputAddMsgAndCleanInterval( ChewingOutput *pgo, ChewingData *pgdata )
 {
 	pgo->bShowMsg = 1;
-	memcpy( pgo->showMsg, pgdata->showMsg, sizeof( wch_t ) * ( pgdata->showMsgLen ) );
+	memcpy( pgo->showMsg, pgdata->showMsg,
+		sizeof( uint32_t ) * ( pgdata->showMsgLen ) );
 	pgo->showMsgLen = pgdata->showMsgLen;
 	pgo->nDispInterval = 0;
 }

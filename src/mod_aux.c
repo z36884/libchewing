@@ -18,6 +18,7 @@
 
 #include "global.h"
 #include "chewing-private.h"
+#include "chewing-utf8-util.h"
 #include "zuin-private.h"
 #include "chewingio.h"
 #include "private.h"
@@ -195,8 +196,11 @@ CHEWING_API char *chewing_aux_String( ChewingContext *ctx )
 	char *msg = (char *) calloc(
 		1 + ctx->output->showMsgLen,
 		sizeof(char) * MAX_UTF8_SIZE );
-	for ( i = 0; i < ctx->output->showMsgLen; ++i )
-		strcat( msg, (char *)(ctx->output->showMsg[ i ].s) );
+	char buf[ MAX_UTF8_SIZE ];
+	for ( i = 0; i < ctx->output->showMsgLen; ++i ) {
+		if ( !u32tou8( ctx->output->showMsg[ i ], buf ) )
+			strcat( msg, buf );
+	}
 	return msg;
 
 }
