@@ -8,6 +8,11 @@
  * of this file.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include "chewing-utf8-util.h"
@@ -90,4 +95,69 @@ const char *ueStrStr( const char *str, size_t lstr,
 			return p;
 	}
 	return NULL;
+}
+
+static inline unsigned char mask( const char c, const int bits )
+{
+	unsigned char ret = c;
+	unsigned char mask = 0xFF;
+	mask <<= bits;
+	mask >>= bits;
+	return (ret & mask);
+}
+
+uint32_t u8tou32( const char *chr )
+{
+	assert( chr );
+	int bytes = ueBytesFromChar( chr[0] );
+	uint32_t ret = 0;
+
+	switch (bytes) {
+	case 1:
+		ret = chr[0];
+		break;
+	case 2:
+	case 3:
+	case 4:
+		ret = mask( chr[0], bytes + 1 );
+		break;
+	case 5:
+	case 6:
+	default:
+		bytes = 0;
+		ret = 0xfffd;
+		break;
+	}
+	for (int i = 1; i < bytes; i++) {
+		ret = (ret << 6) + mask( chr[i], 2 );
+	}
+	return ret;
+}
+
+int u32tou8( const uint32_t chr, char *out )
+{
+	if ( chr > 0x1FFFFFU )
+		return -1;
+
+	if ( chr <= 0x7FU ) {
+		out[0] = chr;
+		out[1] = '\0';
+	} else if ( chr <= 0x7FFU ) {
+		out[0] = 0xC0 + (chr >> 6);
+		out[1] = 0x80 + (chr & 0x3F);
+		out[2] = '\0';
+	} else if ( chr <= 0xFFFFU ) {
+		out[0] = 0xE0 + ((chr >> 12) & 0x3F);
+		out[1] = 0x80 + ((chr >> 6)  & 0x3F);
+		out[2] = 0x80 + (chr & 0x3F);
+		out[3] = '\0';
+	} else if ( chr <= 0x1FFFFFU ) {
+		out[0] = 0xF0 + ((chr >> 18) & 0x3F);
+		out[1] = 0x80 + ((chr >> 12) & 0x3F);
+		out[2] = 0x80 + ((chr >> 6)  & 0x3F);
+		out[3] = 0x80 + (chr & 0x3F);
+		out[4] = '\0';
+	}
+
+	return 0;
 }

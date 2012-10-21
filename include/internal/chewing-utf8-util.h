@@ -11,6 +11,16 @@
 #ifndef CHEWING_UTF8_UTILS_H
 #define CHEWING_UTF8_UTILS_H
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#ifdef HAVE_INTTYPES_H
+#  include <inttypes.h>
+#elif defined HAVE_STDINT_H
+#  include <stdint.h>
+#endif
+
 #include <stddef.h>
 
 /* Return length of UTF-8 string */
@@ -46,5 +56,22 @@ char *ueStrSeek( char *src, size_t n );
  */
 const char* ueStrStr( const char *str, size_t lstr,
                       const char *substr, size_t lsub );
+
+/**
+ * Convert a UTF-8 encoded character to a UTF-32 encoded character
+ *
+ * @param str UTF-8 encoded character
+ * @return a UTF-32 encoded character in uint32_t type
+ */
+uint32_t u8tou32( const char *chr );
+
+/**
+ * Convert a UTF-32 encoded character to a UTF-8 encoded character
+ *
+ * @param chr a UTF-32 encoded character
+ * @param out a pointer to a at least 4 bytes long array
+ * @return 0 on success, 1 on failure
+ */
+int u32tou8( const uint32_t chr, char *out );
 
 #endif /* CHEWING_UTF8_UTILS_H */
