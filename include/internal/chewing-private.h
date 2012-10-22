@@ -228,7 +228,7 @@ typedef struct {
 	long PointStart;
 	long PointEnd;
 	/** @brief the zuin-yin symbols have already entered. */
-	wch_t zuinBuf[ ZUIN_SIZE ];
+	uint32_t zuinBuf[ ZUIN_SIZE ];
 	/** @brief indicate the method of showing sentence break. */
 	IntervalType dispInterval[ MAX_INTERVAL ]; /* from prefer, considering symbol */
 	int nDispInterval;

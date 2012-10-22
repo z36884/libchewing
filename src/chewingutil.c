@@ -919,18 +919,13 @@ static int MakeOutput( ChewingOutput *pgo, ChewingData *pgdata )
 		 * Copy from old content in zuinBuf
 		 * NOTE: No Unicode transformation here.
 		 */
-		for ( i = 0; i< ZUIN_SIZE; i++) {
-			int j;
-			for ( j = 0; j < 2; j++ ) {
-				if ( p[ 0 ] ) {
-					pgo->zuinBuf[ i ].s[ j ] = p[ 0 ];
-					p++;
-				} 
-				else {
-					pgo->zuinBuf[ i ].s[ j ] = '\0';
-				}
+		for ( i = 0; i < ZUIN_SIZE; i++) {
+			if ( *p ) {
+				pgo->zuinBuf[ i ] = u8tou32( p );
+				p++;
+			} else {
+				pgo->zuinBuf[ i ] = 0;
 			}
-			pgo->zuinBuf[ i ].s[ 2 ] = '\0';
 		}
 	} else {
 		for ( i = 0; i < ZUIN_SIZE; i++ ) { 
@@ -938,13 +933,13 @@ static int MakeOutput( ChewingOutput *pgo, ChewingData *pgdata )
 				/* Here we should use (zhuin_tab[i] + 2) to
 				 * skip the 2 space characters at 
 				 * zhuin_tab[0] and zhuin_tab[1]. */
-				ueStrNCpy( (char *) pgo->zuinBuf[ i ].s,
-				           ueStrSeek( (char *) (zhuin_tab[ i ] + 2),
-						      pgdata->zuinData.pho_inx[ i ] - 1 ),
-				           1, 1);
+				/* TODO: Convert zhuin_tab to uint32_t[] */
+				pgo->zuinBuf[ i ] =
+					u8tou32( ueStrSeek( (char *) (zhuin_tab[ i ] + 2),
+							    pgdata->zuinData.pho_inx[ i ] - 1 ) );
 			}
 			else
-				pgo->zuinBuf[ i ].wch = 0;
+				pgo->zuinBuf[ i ] = 0;
 		}
 	}
 

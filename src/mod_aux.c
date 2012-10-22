@@ -88,10 +88,12 @@ CHEWING_API char *chewing_zuin_String( ChewingContext *ctx, int *zuin_count )
 		*zuin_count = 0;
 	s = (char*) calloc(
 		1 + ZUIN_SIZE,
-		sizeof(ctx->output->zuinBuf[ 0 ].s) );
+		MAX_UTF8_SIZE );
+	char buf[ MAX_UTF8_SIZE ];
 	for ( i = 0; i < ZUIN_SIZE; i++ ) {
-		if ( ctx->output->zuinBuf[ i ].s[ 0 ] != '\0' ) {
-			strcat( s, (char *) (ctx->output->zuinBuf[ i ].s) );
+		if ( ctx->output->zuinBuf[ i ] ) {
+			if ( !u32tou8( ctx->output->zuinBuf[ i ], buf ) )
+				strcat( s, buf );
 			if ( zuin_count )
 				(*zuin_count)++;
 		}
@@ -102,7 +104,7 @@ CHEWING_API char *chewing_zuin_String( ChewingContext *ctx, int *zuin_count )
 CHEWING_API int chewing_zuin_Check( ChewingContext *ctx )
 {
 	int ret = 0;
-	if ( ctx->output->zuinBuf[ 0 ].s[ 0 ] == '\0' ) {
+	if ( ctx->output->zuinBuf[ 0 ] ) {
 		ret = 1;
 	}
 	return ret;
