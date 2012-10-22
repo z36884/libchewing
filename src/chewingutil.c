@@ -461,16 +461,14 @@ static int FindIntervalFrom( int from, IntervalType inte[], int nInte )
 
 int WriteChiSymbolToBuf( uint32_t csBuf[], int csBufLen, ChewingData *pgdata )
 {
-	int i, phoneseq_i = 0;
+	int i;
 
 	for ( i = 0 ; i < csBufLen; i++ ) {
 		if ( ChewingIsChiAt( i, pgdata ) ) {
-			csBuf[ i ] = u8tou32( &pgdata->phrOut.chiBuf[ phoneseq_i ] );
-			phoneseq_i +=
-				ueBytesFromChar( pgdata->phrOut.chiBuf[ phoneseq_i ] );
-		}
-		else 
+			csBuf[ i ] = pgdata->phrOut.chiBuf[ i ];
+		} else {
 			csBuf[ i ] = pgdata->chiSymbolBuf[ i ];
+		}
 	}
 	return 0;
 }
@@ -558,7 +556,7 @@ int ReleaseChiSymbolBuf( ChewingData *pgdata, ChewingOutput *pgo )
 		/* Add to userphrase */
 		memcpy( bufPhoneSeq, pgdata->phoneSeq, sizeof( uint16_t ) * throwEnd );
 		bufPhoneSeq[ throwEnd ] = (uint16_t) 0;
-		ueStrNCpy( bufWordSeq, pgdata->phrOut.chiBuf, throwEnd, 1 );
+		u32tou8cpy( bufWordSeq, pgdata->phrOut.chiBuf, 0, throwEnd );
 		UserUpdatePhrase( pgdata, bufPhoneSeq, bufWordSeq );
 
 		KillFromLeft( pgdata, throwEnd );
@@ -600,9 +598,7 @@ static int ChewingIsBreakPoint( int cursor, ChewingData *pgdata )
 	if ( ! ChewingIsChiAt( i + symbols, pgdata ) )
 		return 1;
 	else {
-		ueStrNCpy( buf,
-				ueStrSeek( (char *) &pgdata->phrOut.chiBuf, cursor ),
-				1, 1 );
+		u32tou8cpy( buf, pgdata->phrOut.chiBuf, cursor, 1 );
 		for ( i = 0; i < sizeof(break_word) / sizeof(break_word[0]); i++ ) {
 			if ( ! strcmp ( buf, break_word[ i ] ) )
 				return 1;
@@ -625,9 +621,8 @@ void AutoLearnPhrase( ChewingData *pgdata )
 		if ( len == 1 && ! ChewingIsBreakPoint( from, pgdata ) ) {
 			memcpy( bufPhoneSeq + prev_pos, &pgdata->phoneSeq[ from ], sizeof( uint16_t ) * len );
 			bufPhoneSeq[ prev_pos + len ] = (uint16_t) 0;
-			ueStrNCpy( ueStrSeek( bufWordSeq, prev_pos ),
-					ueStrSeek( (char *) &pgdata->phrOut.chiBuf, from ),
-					len, 1);
+			u32tou8cpy( ueStrSeek( bufWordSeq, prev_pos ),
+				    pgdata->phrOut.chiBuf, from, len );
 			prev_pos += len;
 			pending = 1;
 		}
@@ -639,9 +634,8 @@ void AutoLearnPhrase( ChewingData *pgdata )
 			}
 			memcpy( bufPhoneSeq, &pgdata->phoneSeq[ from ], sizeof( uint16_t ) * len );
 			bufPhoneSeq[ len ] = (uint16_t) 0;
-			ueStrNCpy( bufWordSeq,
-					ueStrSeek( (char *) &pgdata->phrOut.chiBuf, from ),
-					len, 1);
+			u32tou8cpy( bufWordSeq, pgdata->phrOut.chiBuf,
+				    from, len );
 			UserUpdatePhrase( pgdata, bufPhoneSeq, bufWordSeq );
 		}
 	}
@@ -876,21 +870,20 @@ static void ShiftInterval( ChewingOutput *pgo, ChewingData *pgdata )
 
 static int MakeOutput( ChewingOutput *pgo, ChewingData *pgdata )
 {
-	int chi_i, chiSymbol_i, i ;
+	int chiSymbol_i, i ;
 
 	/* fill zero to chiSymbolBuf first */
 	memset( pgo->chiSymbolBuf, 0, sizeof( uint32_t ) * MAX_PHONE_SEQ_LEN );
 
 	/* fill chiSymbolBuf */
 	for ( 
-		chi_i = chiSymbol_i = 0; 
+	        chiSymbol_i = 0;
 		chiSymbol_i < pgdata->chiSymbolBufLen; 
 		chiSymbol_i ++ ) {
 		if ( pgdata->chiSymbolBuf[ chiSymbol_i ] == 0 ) {
 			/* is Chinese, then copy from the PhrasingOutput "phrOut" */
 			pgo->chiSymbolBuf[ chiSymbol_i ] =
-				u8tou32( &pgdata->phrOut.chiBuf[ chi_i ] );
-			chi_i += ueBytesFromChar( pgdata->phrOut.chiBuf[ chi_i ] );
+				pgdata->phrOut.chiBuf[ chiSymbol_i ];
 		}
 		else {
 			/* is Symbol */

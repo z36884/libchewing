@@ -56,7 +56,7 @@ typedef struct {
 } TreeType;
 
 typedef struct {
-	char chiBuf[ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ];
+	uint32_t chiBuf[ MAX_PHONE_SEQ_LEN + 1 ];
 	IntervalType dispInterval[ MAX_INTERVAL ];
 	int nDispInterval;
 	int nNumCut;

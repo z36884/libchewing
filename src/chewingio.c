@@ -1358,11 +1358,8 @@ CHEWING_API int chewing_handle_CtrlNum( ChewingContext *ctx, int key )
 				        &pgdata->phoneSeq[ cursor ],
 				        sizeof( uint16_t ) * newPhraseLen );
 				addPhoneSeq[ newPhraseLen ] = 0;
-				ueStrNCpy( addWordSeq,
-				           ueStrSeek( (char *) &pgdata->phrOut.chiBuf,
-				                      cursor ),
-				           newPhraseLen, 1);
-
+				u32tou8cpy( addWordSeq, pgdata->phrOut.chiBuf,
+					    cursor, newPhraseLen );
 
 				phraseState = UserUpdatePhrase( pgdata, addPhoneSeq, addWordSeq );
 				SetUpdatePhraseMsg( 
@@ -1389,10 +1386,8 @@ CHEWING_API int chewing_handle_CtrlNum( ChewingContext *ctx, int key )
 				        &pgdata->phoneSeq[ cursor - newPhraseLen ],
 				        sizeof( uint16_t ) * newPhraseLen );
 				addPhoneSeq[ newPhraseLen ] = 0;
-				ueStrNCpy( addWordSeq,
-				           ueStrSeek( (char *) &pgdata->phrOut.chiBuf,
-				           cursor - newPhraseLen ),
-				           newPhraseLen, 1);
+				u32tou8cpy( addWordSeq, pgdata->phrOut.chiBuf,
+					    cursor - newPhraseLen, newPhraseLen );
 
 				phraseState = UserUpdatePhrase( pgdata, addPhoneSeq, addWordSeq );
 				SetUpdatePhraseMsg( 

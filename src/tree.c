@@ -597,7 +597,7 @@ static void Discard2( TreeDataType *ptd )
 	ptd->nInterval = nInterval2;
 }
 
-static void LoadChar( ChewingData *pgdata, char *buf, int buf_len, uint16_t phoneSeq[], int nPhoneSeq )
+static void LoadChar( ChewingData *pgdata, uint32_t *buf, int buf_len, uint16_t phoneSeq[], int nPhoneSeq )
 {
 	int i;
 	Word word;
@@ -605,15 +605,14 @@ static void LoadChar( ChewingData *pgdata, char *buf, int buf_len, uint16_t phon
 	memset(buf, 0, buf_len);
 	for ( i = 0; i < nPhoneSeq; i++ ) {
 		GetCharFirst( pgdata, &word, phoneSeq[ i ] );
-		strncat(buf, word.word, buf_len - strlen(buf) - 1);
+		buf[ i ] = u8tou32( word.word );
 	}
-	buf[ buf_len - 1 ] = '\0';
 }
 
 /* kpchen said, record is the index array of interval */
 static void OutputRecordStr(
 		ChewingData *pgdata,
-		char *out_buf, int out_buf_len,
+		uint32_t *out_buf, int out_buf_len,
 		int *record, int nRecord, 
 		uint16_t phoneSeq[], int nPhoneSeq,
 		char selectStr[][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ], 
@@ -626,17 +625,16 @@ static void OutputRecordStr(
 	LoadChar( pgdata, out_buf, out_buf_len, phoneSeq, nPhoneSeq );
 	for ( i = 0; i < nRecord; i++ ) {
 		inter = ptd->interval[ record[ i ] ];
-		ueStrNCpy(
-				ueStrSeek( out_buf, inter.from ),
-				( inter.p_phr )->phrase,
-				( inter.to - inter.from ), -1);
+		u8tou32cpy( out_buf + inter.from,
+			    ( inter.p_phr )->phrase,
+			    ( inter.to - inter.from ) );
 	}
 	for ( i = 0; i < nSelect; i++ ) {
 		inter.from = selectInterval[ i ].from;
 		inter.to = selectInterval[ i ].to ;
-		ueStrNCpy(
-				ueStrSeek( out_buf, inter.from ),
-				selectStr[ i ], ( inter.to - inter.from ), -1);
+		u8tou32cpy( out_buf + inter.from,
+			    selectStr[ i ],
+			    ( inter.to - inter.from ) );
 	}
 }
 
