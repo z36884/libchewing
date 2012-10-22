@@ -49,11 +49,6 @@ static inline int min( int a, int b )
 	return a < b ? a : b;
 }
 
-typedef union {
-	char s[ MAX_UTF8_SIZE + 1];
-	uint16_t wch;
-} wch_t;
-
 typedef struct {
 	uint16_t phone_id;
 	int phrase_id;
@@ -191,7 +186,7 @@ typedef struct {
 	ZuinData zuinData;
 	ChewingConfigData config;
     /** @brief current input buffer, content==0 means Chinese code */
-	wch_t chiSymbolBuf[ MAX_PHONE_SEQ_LEN ];
+	uint32_t chiSymbolBuf[ MAX_PHONE_SEQ_LEN ];
 	int chiSymbolCursor;
 	int chiSymbolBufLen;
 	int PointStart;

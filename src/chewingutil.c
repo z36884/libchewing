@@ -95,12 +95,12 @@ int NoSymbolBetween( ChewingData *pgdata, int begin, int end )
 	/* find the beginning index in the chiSymbolBuf */
 	for ( nChi = i = 0; i < pgdata->chiSymbolBufLen && nChi < begin; i++ )
 		/* it is Chinese word */
-		if ( pgdata->chiSymbolBuf[ i ].wch == 0 )
+		if ( pgdata->chiSymbolBuf[ i ] == 0 )
 			nChi++;
 
 	for ( k = i + 1; k < pgdata->chiSymbolBufLen && k <= end; k++ )
 		/*  not a Chinese word */
-		if ( pgdata->chiSymbolBuf[ i ].wch != 0 )
+		if ( pgdata->chiSymbolBuf[ i ] != 0 )
 			return 0;
 
 	return 1;
@@ -159,11 +159,9 @@ static int _Inner_InternalSpecialSymbol(
 		memmove( 
 			&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
 			&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] ),
-			sizeof( wch_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
+			sizeof( uint32_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
 
-		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].wch = 0;
-		ueStrNCpy( (char *) pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].s,
-				chibuf, 1, 1);
+		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] = u8tou32( chibuf );
 		/* Save Symbol Key */
 		memmove( 
 			&( pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor + 1 ] ),
@@ -386,11 +384,10 @@ int SymbolChoice( ChewingData *pgdata, int sel_i )
 			memmove(
 				&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
 				&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] ),
-				sizeof( wch_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
+				sizeof( uint32_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
 		}
-		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].wch = 0;
-		ueStrNCpy( (char *) pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].s,
-				pgdata->choiceInfo.totalChoiceStr[ sel_i ], 1, 1);
+		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] =
+			u8tou32( pgdata->choiceInfo.totalChoiceStr[ sel_i ] );
 
 		/* This is very strange */
 		key = FindSymbolKey( pgdata->choiceInfo.totalChoiceStr[ sel_i ] );
@@ -425,10 +422,9 @@ int SymbolInput( int key, ChewingData *pgdata )
 		memmove(
 			&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
 			&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] ),
-			sizeof( wch_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
+			sizeof( uint32_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
 
-		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].wch = 0;
-		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].s[ 0 ] = (char) key;
+		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] = key;
 
 		/* Save Symbol Key */
 		memmove( &( pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor + 1 ] ),
@@ -474,7 +470,7 @@ int WriteChiSymbolToBuf( uint32_t csBuf[], int csBufLen, ChewingData *pgdata )
 				ueBytesFromChar( pgdata->phrOut.chiBuf[ phoneseq_i ] );
 		}
 		else 
-			csBuf[ i ] = u8tou32( pgdata->chiSymbolBuf[ i ].s );
+			csBuf[ i ] = pgdata->chiSymbolBuf[ i ];
 	}
 	return 0;
 }
@@ -691,9 +687,9 @@ int AddChi( uint16_t phone, ChewingData *pgdata )
 	memmove(
 		&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
 		&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] ) ,
-		sizeof( wch_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
+		sizeof( uint32_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
 	/* "0" means Chinese word */
-	pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ].wch = 0;
+	pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] = 0;
 	pgdata->chiSymbolBufLen++;
 	pgdata->chiSymbolCursor++;
 
@@ -883,14 +879,14 @@ static int MakeOutput( ChewingOutput *pgo, ChewingData *pgdata )
 	int chi_i, chiSymbol_i, i ;
 
 	/* fill zero to chiSymbolBuf first */
-	memset( pgo->chiSymbolBuf, 0, sizeof( wch_t ) * MAX_PHONE_SEQ_LEN );
+	memset( pgo->chiSymbolBuf, 0, sizeof( uint32_t ) * MAX_PHONE_SEQ_LEN );
 
 	/* fill chiSymbolBuf */
 	for ( 
 		chi_i = chiSymbol_i = 0; 
 		chiSymbol_i < pgdata->chiSymbolBufLen; 
 		chiSymbol_i ++ ) {
-		if ( pgdata->chiSymbolBuf[ chiSymbol_i ].wch == 0 ) {
+		if ( pgdata->chiSymbolBuf[ chiSymbol_i ] == 0 ) {
 			/* is Chinese, then copy from the PhrasingOutput "phrOut" */
 			pgo->chiSymbolBuf[ chiSymbol_i ] =
 				u8tou32( &pgdata->phrOut.chiBuf[ chi_i ] );
@@ -898,7 +894,7 @@ static int MakeOutput( ChewingOutput *pgo, ChewingData *pgdata )
 		}
 		else {
 			/* is Symbol */
-			pgo->chiSymbolBuf[ chiSymbol_i ] = pgdata->chiSymbolBuf[ chiSymbol_i ].s[0];
+			pgo->chiSymbolBuf[ chiSymbol_i ] = pgdata->chiSymbolBuf[ chiSymbol_i ];
 		}
 	}
 
@@ -1020,7 +1016,7 @@ int ChewingIsChiAt( int chiSymbolCursor, ChewingData *pgdata )
 	return (
 		( chiSymbolCursor < pgdata->chiSymbolBufLen ) &&
 		( 0 <= chiSymbolCursor ) &&
-		(pgdata->chiSymbolBuf[ chiSymbolCursor ].wch == 0 ) );
+		(pgdata->chiSymbolBuf[ chiSymbolCursor ] == 0 ) );
 }
 
 void RemoveSelectElement( int i, ChewingData *pgdata )
@@ -1093,7 +1089,7 @@ int ChewingKillChar(
 	memmove( 
 		& pgdata->chiSymbolBuf[ chiSymbolCursorToKill ],
 		& pgdata->chiSymbolBuf[ chiSymbolCursorToKill + 1 ], 
-		(pgdata->chiSymbolBufLen - chiSymbolCursorToKill) * sizeof( wch_t ) );
+		(pgdata->chiSymbolBufLen - chiSymbolCursorToKill) * sizeof( uint32_t ) );
 	pgdata->chiSymbolBufLen--;
 	pgdata->chiSymbolCursor -= minus;
 	if (pgdata->chiSymbolCursor < 0)
