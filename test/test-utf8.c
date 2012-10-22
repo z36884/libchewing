@@ -78,5 +78,16 @@ int main (int argc, char *argv[])
 	ret = u32tou8( u32, out );
 	ok (ret < 0, "u32tou8 on invalid unicode");
 
+	u8string = "測試";
+	uint32_t u32out[2];
+	u8tou32cpy( u32out, u8string, 2 );
+	ok (u32out[0] == 0x6E2C, "u8tou32cpy copied first character");
+	ok (u32out[1] == 0x8A66, "u8tou32cpy copied second character");
+
+	uint32_t u32string[] = { 0x6E2C, 0x8A66 };
+	char u8out[ 6 * 2 + 1 ];
+	u32tou8cpy( u8out, u32string, 0, 2 );
+	ok (!strcmp( u8out, "測試" ), "u32tou8cpy copied a UTF-32 string");
+
 	return exit_status();
 }

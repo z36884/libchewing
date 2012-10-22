@@ -74,4 +74,23 @@ uint32_t u8tou32( const char *chr );
  */
 int u32tou8( const uint32_t chr, char *out );
 
+/**
+ * Copy a UTF-32 encoded string to a UTF-8 encoded string
+ *
+ * @param dest UTF-32 encoded output string
+ * @param src UTF-8 encoded src string
+ * @param n How many UTF-32 character to copy
+ */
+void u8tou32cpy( uint32_t *dest, char * const src, size_t n );
+
+/**
+ * Copy a UTF-8 encoded string to a UTF-32 encoded string
+ *
+ * @param dest UTF-8 encoded output string
+ * @param src UTF-32 encoded src string
+ * @param start offset of src
+ * @param n How many UTF-32 character to copy
+ */
+void u32tou8cpy( char *dest, const uint32_t src[], size_t start, size_t n );
+
 #endif /* CHEWING_UTF8_UTILS_H */

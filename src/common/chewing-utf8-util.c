@@ -161,3 +161,22 @@ int u32tou8( const uint32_t chr, char *out )
 
 	return 0;
 }
+
+void u8tou32cpy( uint32_t *dest, char * const src, size_t n )
+{
+	char *p = src;
+	for ( int i = 0; i < n; i++ ) {
+		dest[ i ] = u8tou32( p );
+		p += ueBytesFromChar( *p );
+	}
+}
+
+void u32tou8cpy( char *dest, const uint32_t src[], size_t start, size_t n )
+{
+	char buf[ 6 ];
+	*dest = 0;
+	for ( int i = start; i < start + n; i++ ) {
+		if ( !u32tou8( src[ i ], buf ) )
+			strcat( dest, buf );
+	}
+}
