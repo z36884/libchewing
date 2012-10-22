@@ -50,7 +50,7 @@ static inline int min( int a, int b )
 }
 
 typedef union {
-	unsigned char s[ MAX_UTF8_SIZE + 1];
+	char s[ MAX_UTF8_SIZE + 1];
 	uint16_t wch;
 } wch_t;
 
@@ -235,7 +235,7 @@ typedef struct {
 	/** @brief indicate the break points going to display.*/ 
 	int dispBrkpt[ MAX_PHONE_SEQ_LEN + 1 ];
 	/** @brief the string going to commit. */
-	wch_t commitStr[ MAX_PHONE_SEQ_LEN ];
+	uint32_t commitStr[ MAX_PHONE_SEQ_LEN ];
 	int nCommitStr;
 	/** @brief information of character selections. */
 	ChoiceInfo* pci;

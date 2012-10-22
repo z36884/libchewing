@@ -239,17 +239,6 @@ void show_commit_string( ChewingContext *ctx )
 	static int x = 12;
 	static int y = 0;
 	char *commit_string;
-#if 0
-	if ( pgo->keystrokeRtn & KEYSTROKE_COMMIT ) {
-		for ( i = 0; i < pgo->nCommitStr; i++ ) {
-			mvaddstr( x, y, (const char *) pgo->commitStr[ i ].s );
-			y = ( y >= 54 ) ?
-				0 : 
-				( y + strlen( (const char *) pgo->commitStr[ i ].s ) - 3 < 0 ? y + 1 : y + 2 );
-			x = ( y == 0 ) ? ( x + 1 ) : x;
-		}
-	}
-#endif
 	if ( chewing_commit_Check( ctx ) ) {
 		commit_string = chewing_commit_String( ctx );
 		mvaddstr( x, y, FILL_BLANK);

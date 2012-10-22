@@ -44,8 +44,10 @@ CHEWING_API char *chewing_commit_String( ChewingContext *ctx )
 	char *s = (char *) calloc(
 		1 + ctx->output->nCommitStr,
 		sizeof(char) * MAX_UTF8_SIZE );
+	char buf[ MAX_UTF8_SIZE ];
 	for ( i = 0; i < ctx->output->nCommitStr; i++ ) {
-		strcat( s, (char *) (ctx->output->commitStr[ i ].s) );
+		if ( !u32tou8( ctx->output->commitStr[ i ], buf ) )
+			strcat( s, buf );
 	}
 	return s;
 }

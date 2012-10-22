@@ -463,24 +463,18 @@ static int FindIntervalFrom( int from, IntervalType inte[], int nInte )
 	return -1;
 }
 
-int WriteChiSymbolToBuf( wch_t csBuf[], int csBufLen, ChewingData *pgdata )
+int WriteChiSymbolToBuf( uint32_t csBuf[], int csBufLen, ChewingData *pgdata )
 {
 	int i, phoneseq_i = 0;
 
 	for ( i = 0 ; i < csBufLen; i++ ) {
 		if ( ChewingIsChiAt( i, pgdata ) ) {
-			/*
-			 * Workaround to avoid different initialization behavior 
-			 * among Win32 and Unix-like OSs.
-			 */
-			memset( &( csBuf[ i ].s ), 0, MAX_UTF8_SIZE + 1 );
-			ueStrNCpy( (char *) csBuf[ i ].s,
-			           &( pgdata->phrOut.chiBuf[ phoneseq_i ] ), 
-				   1, 1);
-			phoneseq_i += ueBytesFromChar( pgdata->phrOut.chiBuf[ phoneseq_i ] );
+			csBuf[ i ] = u8tou32( &pgdata->phrOut.chiBuf[ phoneseq_i ] );
+			phoneseq_i +=
+				ueBytesFromChar( pgdata->phrOut.chiBuf[ phoneseq_i ] );
 		}
 		else 
-			csBuf[ i ] = pgdata->chiSymbolBuf[ i ];
+			csBuf[ i ] = u8tou32( pgdata->chiSymbolBuf[ i ].s );
 	}
 	return 0;
 }

@@ -551,7 +551,7 @@ CHEWING_API int chewing_handle_Space( ChewingContext *ctx )
 		else {
 			rtn = SymbolInput( ' ', pgdata );
 		}
-		pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ];
+		pgo->commitStr[ 0 ] = u8tou32( pgdata->chiSymbolBuf[ 0 ].s );
 		pgo->nCommitStr = 1;
 		pgdata->chiSymbolBufLen = 0;
 		pgdata->chiSymbolCursor = 0;
@@ -593,7 +593,7 @@ CHEWING_API int chewing_handle_Space( ChewingContext *ctx )
 			DEBUG_OUT(
 				"\t\tQuick commit buf[0]=%c\n", 
 				pgdata->chiSymbolBuf[ 0 ].s[ 0 ] );
-			pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ]; 
+			pgo->commitStr[ 0 ] = u8tou32( pgdata->chiSymbolBuf[ 0 ].s );
 			pgo->nCommitStr = 1;
 			pgdata->chiSymbolBufLen = 0;
 			pgdata->chiSymbolCursor = 0;
@@ -1291,7 +1291,7 @@ End_keyproc:
 		DEBUG_OUT(
 				"\t\tQuick commit buf[0]=%c\n", 
 				pgdata->chiSymbolBuf[ 0 ].s[ 0 ] );
-		pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ]; 
+		pgo->commitStr[ 0 ] = u8tou32( pgdata->chiSymbolBuf[ 0 ].s );
 		pgo->nCommitStr = 1;
 		pgdata->chiSymbolBufLen = 0;
 		pgdata->chiSymbolCursor = 0;
@@ -1465,7 +1465,7 @@ CHEWING_API int chewing_handle_Numlock( ChewingContext *ctx, int key )
 			keystrokeRtn = KEYSTROKE_IGNORE ;
 		}
 		else if ( QuickCommit ) {
-			pgo->commitStr[ 0 ] = pgdata->chiSymbolBuf[ 0 ]; 
+			pgo->commitStr[ 0 ] = u8tou32( pgdata->chiSymbolBuf[ 0 ].s );
 			pgo->nCommitStr = 1;
 			pgdata->chiSymbolBufLen = 0;
 			pgdata->chiSymbolCursor = 0;
