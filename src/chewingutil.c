@@ -892,15 +892,13 @@ static int MakeOutput( ChewingOutput *pgo, ChewingData *pgdata )
 		chiSymbol_i ++ ) {
 		if ( pgdata->chiSymbolBuf[ chiSymbol_i ].wch == 0 ) {
 			/* is Chinese, then copy from the PhrasingOutput "phrOut" */
-			pgo->chiSymbolBuf[ chiSymbol_i ].wch = 0;
-			ueStrNCpy( (char *) pgo->chiSymbolBuf[ chiSymbol_i ].s,
-			           &( pgdata->phrOut.chiBuf[ chi_i ] ),
-			           1, 1 );
-			chi_i += ueBytesFromChar( pgo->chiSymbolBuf[ chiSymbol_i ].s[0] );
+			pgo->chiSymbolBuf[ chiSymbol_i ] =
+				u8tou32( &pgdata->phrOut.chiBuf[ chi_i ] );
+			chi_i += ueBytesFromChar( pgdata->phrOut.chiBuf[ chi_i ] );
 		}
 		else {
 			/* is Symbol */
-			pgo->chiSymbolBuf[ chiSymbol_i ] = pgdata->chiSymbolBuf[ chiSymbol_i ];
+			pgo->chiSymbolBuf[ chiSymbol_i ] = pgdata->chiSymbolBuf[ chiSymbol_i ].s[0];
 		}
 	}
 

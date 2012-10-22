@@ -68,8 +68,10 @@ CHEWING_API char *chewing_buffer_String( ChewingContext *ctx )
 	char *s = (char *) calloc(
 		1 + ctx->output->chiSymbolBufLen,
 		sizeof(char) * MAX_UTF8_SIZE );
+	char buf[ MAX_UTF8_SIZE ];
 	for ( i = 0; i < ctx->output->chiSymbolBufLen; i++ ) {
-		strcat( s, (char *) (ctx->output->chiSymbolBuf[ i ].s) );
+		if ( !u32tou8( ctx->output->chiSymbolBuf[ i ], buf ) )
+			strcat( s, buf );
 	}
 	return s;
 }

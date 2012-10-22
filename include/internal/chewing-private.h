@@ -220,7 +220,7 @@ typedef struct {
 
 typedef struct {
 	/** @brief the content of Edit buffer. */
-	wch_t chiSymbolBuf[ MAX_PHONE_SEQ_LEN ];
+	uint32_t chiSymbolBuf[ MAX_PHONE_SEQ_LEN ];
 	/** @brief the length of Edit buffer. */
 	int chiSymbolBufLen;
 	/** @brief current position of the cursor. */
