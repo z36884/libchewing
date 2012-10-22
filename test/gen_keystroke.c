@@ -85,7 +85,7 @@ void show_edit_buffer( int x, int y, ChewingContext *ctx )
 		p += ueBytesFromChar(*p);
 	}
 	move( x, count );
-	free( buffer_string );
+	chewing_free( buffer_string );
 }
 
 void show_interval_buffer( int x, int y, ChewingContext *ctx )
@@ -117,6 +117,7 @@ void show_interval_buffer( int x, int y, ChewingContext *ctx )
 		count += ueBytesFromChar(*p) <= 1 ? 1 : 2;
 		p += ueBytesFromChar(*p);
 	}
+	chewing_free( buf );
 	arrPos[ i ] = count;
 
 	memset( out_buf, ' ', count * ( sizeof( char ) ) );
