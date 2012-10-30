@@ -141,9 +141,6 @@ int HaninSymbolInput( ChewingData *pgdata )
 	pai->nAvail = 1;
 	pai->currentAvail = 0;
 	pci->nChoicePerPage = candPerPage;
-	if ( pci->nChoicePerPage > MAX_SELKEY ) {
-		pci->nChoicePerPage = MAX_SELKEY;
-	}
 	pci->nPage = CEIL_DIV( pci->nTotalChoice, pci->nChoicePerPage );
 	pci->pageNo = 0;
 	pci->isSymbol = 1;
@@ -374,8 +371,6 @@ int SymbolChoice( ChewingData *pgdata, int sel_i )
 		pai->nAvail = 1;
 		pai->currentAvail = 0;
 		pci->nChoicePerPage = pgdata->config.candPerPage;
-		if ( pci->nChoicePerPage > MAX_SELKEY )
-			pci->nChoicePerPage = MAX_SELKEY;
 		pci->nPage = CEIL_DIV( pci->nTotalChoice, pci->nChoicePerPage );
 		pci->pageNo = 0;
 		pci->isSymbol = 2;
@@ -603,7 +598,7 @@ static int ChewingIsBreakPoint( int cursor, ChewingData *pgdata )
 		return 1;
 	else {
 		u32tou8cpy( buf, pgdata->phrOut.chiBuf, cursor, 1 );
-		for ( i = 0; i < sizeof(break_word) / sizeof(break_word[0]); i++ ) {
+		for ( i = 0; (size_t) i < sizeof(break_word) / sizeof(break_word[0]); i++ ) {
 			if ( ! strcmp ( buf, break_word[ i ] ) )
 				return 1;
 		}
@@ -1307,8 +1302,6 @@ int OpenSymbolChoice( ChewingData *pgdata )
 	}
 
 	pci->nChoicePerPage = pgdata->config.candPerPage;
-	if ( pci->nChoicePerPage > MAX_SELKEY )
-		pci->nChoicePerPage = MAX_SELKEY;
 	pci->nPage = CEIL_DIV( pci->nTotalChoice, pci->nChoicePerPage );
 	pci->pageNo = 0;
 	pci->isSymbol = 3;

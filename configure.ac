@@ -1,8 +1,8 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.59])
+AC_PREREQ([2.67])
 
-AC_INIT([libchewing], [0.3.3], [chewing-devel@googlegroups.com])
+AC_INIT([libchewing],[0.3.3],[chewing-devel@googlegroups.com])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_SRCDIR([src/chewingio.c])
 AC_CONFIG_MACRO_DIR([m4])
@@ -41,11 +41,10 @@ AC_DEFINE_UNQUOTED(LIBCHEWING_VERSION,
 AM_MAINTAINER_MODE([enable])
 AM_INIT_AUTOMAKE
 AM_SILENT_RULES([yes])
-AM_CONFIG_HEADER([include/config.h])
+AC_CONFIG_HEADERS([include/config.h])
 
 # Init libtool
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
+LT_INIT([win32-dll])
 
 # libtool option to control which symbols are exported
 # right now, symbols starting with _ are not exported
@@ -76,20 +75,10 @@ AC_SUBST(CC_FOR_BUILD)
 # Default CFLAGS
 AM_CFLAGS="$CFLAGS -Wall"
 
-# Checks for ncursesw
-AC_CHECK_LIB([ncursesw], [initscr],
-             [AC_CHECK_HEADER([ncursesw/curses.h],
-                [enable_ncursesw=yes], [enable_ncursesw=no])],
-             [enable_ncursesw=no])
-AM_CONDITIONAL([ENABLE_TEXT_UI], [test x$enable_ncursesw = "xyes"])
-if test "$enable_ncursesw" = "yes"; then
-        AC_DEFINE(HAVE_NCURSESW_CURSES_H, 1,
-                [ Define to 1 if you have the <ncursesw/curses.h> header file. ])
-    AC_SUBST(NCURSESW_LIBS, ['-lncursesw'])
-fi
+AX_WITH_CURSES
+AM_CONDITIONAL([ENABLE_TEXT_UI], [test x$ax_cv_ncursesw = "xyes"])
 
 # Options
-
 dnl Debugging switch
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -207,6 +196,6 @@ Build options:
   Enable debug            $LIBDEBUG
   Enable gcov             $ENABLE_GCOV
   Enable binary data      $binary_data
-  Build TextUI sample     $enable_ncursesw
+  Build TextUI sample     $ax_cv_ncursesw
   Default CFLAGS          $AM_CFLAGS
 ])

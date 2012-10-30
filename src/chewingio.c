@@ -137,6 +137,21 @@ static void chooseCandidate( ChewingContext *ctx, int toSelect, int key_buf_curs
 	}
 }
 
+static ChewingData * allocate_ChewingData()
+{
+	static const ChewingConfigData DEFAULT_CONFIG = {
+		.candPerPage = MAX_SELKEY,
+		.selKey = { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' },
+	};
+
+	ChewingData *data = ALC( ChewingData, 1 );
+	if ( data ) {
+		data->config = DEFAULT_CONFIG;
+	}
+
+	return data;
+}
+
 CHEWING_API ChewingContext *chewing_new()
 {
 	ChewingContext *ctx;
@@ -152,7 +167,7 @@ CHEWING_API ChewingContext *chewing_new()
 	if ( !ctx->output )
 		goto error;
 
-	ctx->data = ALC ( ChewingData, 1 );
+	ctx->data = allocate_ChewingData();
 	if ( !ctx->data )
 		goto error;
 
@@ -217,8 +232,8 @@ error:
 }
 
 CHEWING_API int chewing_Init(
-		const char *dataPath,
-		const char *hashPath )
+		const char *dataPath UNUSED,
+		const char *hashPath UNUSED)
 {
 #ifdef ENABLE_DEBUG
 {
@@ -352,7 +367,8 @@ CHEWING_API int chewing_Configure( ChewingContext *ctx, ChewingConfigData *pcd )
 
 CHEWING_API void chewing_set_candPerPage( ChewingContext *ctx, int n )
 {
-	ctx->data->config.candPerPage = n;
+	if ( MIN_SELKEY <= n && n <= MAX_SELKEY )
+		ctx->data->config.candPerPage = n;
 }
 
 CHEWING_API int chewing_get_candPerPage( ChewingContext *ctx )
@@ -381,11 +397,11 @@ CHEWING_API void chewing_set_selKey( ChewingContext *ctx, int *selkeys,
 
 CHEWING_API int* chewing_get_selKey( ChewingContext *ctx )
 {
-	int *selkeys = ALC( int, MAX_SELKEY );
-	memcpy(
-		selkeys,
-		ctx->data->config.selKey,
-		sizeof( selkeys[ 0 ] ) * MAX_SELKEY );
+	int *selkeys = ALC( int , MAX_SELKEY );
+	if ( selkeys ) {
+		memcpy( selkeys, ctx->data->config.selKey,
+			sizeof( *selkeys ) * MAX_SELKEY );
+	}
 	return selkeys;
 }
 

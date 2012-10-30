@@ -20,10 +20,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_NCURSESW_CURSES_H
-#include <ncursesw/curses.h>
+#if defined HAVE_NCURSESW_CURSES_H
+#  include <ncursesw/curses.h>
+#elif defined HAVE_NCURSESW_H
+#  include <ncursesw.h>
+#elif defined HAVE_NCURSES_CURSES_H
+#  include <ncurses/curses.h>
+#elif defined HAVE_NCURSES_H
+#  include <ncurses.h>
+#elif defined HAVE_CURSES_H
+#  include <curses.h>
 #else
-#error "There is no curses package found."
+#  error "SysV or X/Open-compatible Curses header file required"
 #endif
 #include <locale.h>
 
@@ -395,7 +403,10 @@ int main( int argc, char *argv[] )
 				break;
 			default:
 				chewing_handle_Default( ctx, (char) ch );
-				fprintf( fout, "%c", (char) ch );
+				if ( ch != '<' && ch != '>' )
+					fprintf( fout, "%c", (char) ch );
+				else
+					fprintf( fout, "<%c>", (char) ch );
 				break;
 		}
 		drawline( 0, 0 );

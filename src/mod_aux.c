@@ -155,8 +155,7 @@ CHEWING_API int chewing_cand_hasNext( ChewingContext *ctx )
 CHEWING_API char *chewing_cand_String( ChewingContext *ctx )
 {
 	char *s;
-	if ( chewing_cand_hasNext( ctx ) ||
-	     (ctx->cand_no < ctx->output->pci->nTotalChoice) ) {
+	if ( chewing_cand_hasNext( ctx ) ) {
 		int len = u32len( ctx->output->pci->totalChoiceStr[ ctx->cand_no ] );
 		s = ALC( char, MAX_UTF8_SIZE * len +1 );
 		u32tou8cpy( s, ctx->output->pci->totalChoiceStr[ ctx->cand_no ],
@@ -224,7 +223,7 @@ CHEWING_API int chewing_keystroke_CheckAbsorb( ChewingContext *ctx )
 	return (ctx->output->keystrokeRtn & KEYSTROKE_ABSORB);
 }
 
-CHEWING_API int chewing_kbtype_Total( ChewingContext *ctx )
+CHEWING_API int chewing_kbtype_Total( ChewingContext *ctx UNUSED )
 {
 	return KB_TYPE_NUM;
 }
