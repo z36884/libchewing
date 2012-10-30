@@ -93,4 +93,12 @@ void u8tou32cpy( uint32_t *dest, char * const src, size_t n );
  */
 void u32tou8cpy( char *dest, const uint32_t src[], size_t start, size_t n );
 
+/**
+ * Calculate the length of a zero terminated UTF-32 encoded string
+ *
+ * @param str UTF-32 encoded string
+ * @return length of str
+ */
+size_t u32len( const uint32_t str[] );
+
 #endif /* CHEWING_UTF8_UTILS_H */

@@ -89,5 +89,8 @@ int main (int argc, char *argv[])
 	u32tou8cpy( u8out, u32string, 0, 2 );
 	ok (!strcmp( u8out, "測試" ), "u32tou8cpy copied a UTF-32 string");
 
+	uint32_t zu32string[] = { 0x6E2C, 0x8A66, 0 };
+	ok (u32len( zu32string ) == 2, "u32len could calculate the string length");
+
 	return exit_status();
 }

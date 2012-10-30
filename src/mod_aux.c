@@ -157,7 +157,10 @@ CHEWING_API char *chewing_cand_String( ChewingContext *ctx )
 	char *s;
 	if ( chewing_cand_hasNext( ctx ) ||
 	     (ctx->cand_no < ctx->output->pci->nTotalChoice) ) {
-		s = strdup( ctx->output->pci->totalChoiceStr[ ctx->cand_no ] );
+		int len = u32len( ctx->output->pci->totalChoiceStr[ ctx->cand_no ] );
+		s = ALC( char, MAX_UTF8_SIZE * len +1 );
+		u32tou8cpy( s, ctx->output->pci->totalChoiceStr[ ctx->cand_no ],
+			    0, len );
 		ctx->cand_no++;
 	} else {
 		s = strdup( "" );

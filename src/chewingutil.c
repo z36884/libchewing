@@ -131,8 +131,9 @@ int HaninSymbolInput( ChewingData *pgdata )
 
 	pci->nTotalChoice = 0;
 	for ( i = 0; i < pgdata->static_data.n_symbol_entry; i++ ) {
-		strcpy( pci->totalChoiceStr[ pci->nTotalChoice ], 
-			pgdata->static_data.symbol_table[ i ]->category );
+		u8tou32cpy( pci->totalChoiceStr[ pci->nTotalChoice ],
+			    pgdata->static_data.symbol_table[ i ]->category,
+			    ueStrLen( pgdata->static_data.symbol_table[ i ]->category ) );
 		pci->nTotalChoice++; 
 	}
 	pai->avail[ 0 ].len = 1;
@@ -363,8 +364,9 @@ int SymbolChoice( ChewingData *pgdata, int sel_i )
 		/* Display all symbols in this category */
 		pci->nTotalChoice = 0;
 		for ( i = 0; i < pgdata->static_data.symbol_table[ sel_i ]->nSymbols; i++ ) {
-			ueStrNCpy( pci->totalChoiceStr[ pci->nTotalChoice ],
-					pgdata->static_data.symbol_table[ sel_i ]->symbols[ i ], 1, 1 );
+			u8tou32cpy( pci->totalChoiceStr[ pci->nTotalChoice ],
+				    pgdata->static_data.symbol_table[ sel_i ]->symbols[ i ],
+				    1 );
 			pci->nTotalChoice++;
 		}
 		pai->avail[ 0 ].len = 1;
@@ -387,10 +389,12 @@ int SymbolChoice( ChewingData *pgdata, int sel_i )
 				sizeof( uint32_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
 		}
 		pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] =
-			u8tou32( pgdata->choiceInfo.totalChoiceStr[ sel_i ] );
+			pgdata->choiceInfo.totalChoiceStr[ sel_i ][ 0 ];
 
 		/* This is very strange */
-		key = FindSymbolKey( pgdata->choiceInfo.totalChoiceStr[ sel_i ] );
+		char symbol[ MAX_UTF8_SIZE ];
+		u32tou8( pgdata->choiceInfo.totalChoiceStr[ sel_i ][ 0 ], symbol );
+		key = FindSymbolKey( symbol );
 		pgdata->symbolKeyBuf[ pgdata->chiSymbolCursor ] = key ? key : '0';
 
 		pgdata->bUserArrCnnct[ PhoneSeqCursor( pgdata ) ] = 0;
@@ -965,9 +969,9 @@ int AddSelect( ChewingData *pgdata, int sel_i )
 	nSelect = pgdata->nSelect;
 
 	/* change "selectStr" , "selectInterval" , and "nSelect" of ChewingData */
-	ueStrNCpy( pgdata->selectStr[ nSelect ],
-			pgdata->choiceInfo.totalChoiceStr[ sel_i ],
-			length, 1 );
+	u32tou8cpy( pgdata->selectStr[ nSelect ],
+		    pgdata->choiceInfo.totalChoiceStr[ sel_i ],
+		    0, length );
 	cursor = PhoneSeqCursor( pgdata );
 	pgdata->selectInterval[ nSelect ].from = cursor;
 	pgdata->selectInterval[ nSelect ].to = cursor + length;
@@ -1296,8 +1300,9 @@ int OpenSymbolChoice( ChewingData *pgdata )
 	}
 	pci->nTotalChoice = 0;
 	for ( i = 1; pBuf[ i ]; i++ ) {
-		ueStrNCpy( pci->totalChoiceStr[ pci->nTotalChoice ], 
-				pBuf[ i ], ueStrLen( pBuf[i] ), 1 );
+		u8tou32cpy( pci->totalChoiceStr[ pci->nTotalChoice ],
+			    pBuf[ i ], ueStrLen( pBuf[i] ) );
+		pci->totalChoiceStr[ pci->nTotalChoice ][ ueStrLen( pBuf[i] ) ] = 0;
 		pci->nTotalChoice++; 
 	}
 

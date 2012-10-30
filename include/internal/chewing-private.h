@@ -99,7 +99,7 @@ typedef struct {
 	/** @brief number of choices per page. */
 	int nChoicePerPage;
 	/** @brief store possible phrases for being chosen. */
-	char totalChoiceStr[ MAX_CHOICE ][ MAX_PHRASE_LEN * MAX_UTF8_SIZE + 1 ];
+	uint32_t totalChoiceStr[ MAX_CHOICE ][ MAX_PHRASE_LEN + 1 ];
 	/** @brief number of phrases to choose. */
 	int nTotalChoice;
 	int oldChiSymbolCursor;

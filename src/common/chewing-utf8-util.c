@@ -182,3 +182,10 @@ void u32tou8cpy( char *dest, const uint32_t src[], size_t start, size_t n )
 			strcat( dest, buf );
 	}
 }
+
+size_t u32len( const uint32_t str[] )
+{
+	int i;
+	for ( i = 0; str[ i ] != 0; i++ );
+	return i;
+}
