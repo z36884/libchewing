@@ -196,7 +196,7 @@ typedef struct {
 
 	uint16_t phoneSeq[ MAX_PHONE_SEQ_LEN ];
 	int nPhoneSeq;
-	char selectStr[ MAX_PHONE_SEQ_LEN ][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ];
+	uint32_t selectStr[ MAX_PHONE_SEQ_LEN ][ MAX_PHONE_SEQ_LEN + 1 ];
 	IntervalType selectInterval[ MAX_PHONE_SEQ_LEN ];
 	int nSelect;
 	IntervalType preferInterval[ MAX_INTERVAL ]; /* add connect points */

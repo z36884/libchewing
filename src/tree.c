@@ -168,8 +168,8 @@ static int CheckBreakpoint( int from, int to, int bArrBrkpt[] )
 static int CheckUserChoose( 
 		ChewingData *pgdata,
 		uint16_t *new_phoneSeq, int from , int to,
-		Phrase **pp_phr, 
-		char selectStr[][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ], 
+		Phrase **pp_phr,
+		uint32_t selectStr[][MAX_PHONE_SEQ_LEN + 1],
 		IntervalType selectInterval[], int nSelect )
 {
 	IntervalType inte, c;
@@ -211,10 +211,13 @@ static int CheckUserChoose(
 				 * 'selectStr[chno]' test if not ok then return 0, 
 				 * if ok then continue to test. */
 				len = c.to - c.from;
-				if ( memcmp(
-					ueStrSeek( pUserPhraseData->wordSeq, c.from - from ),
-					selectStr[ chno ],
-					ueStrNBytes( selectStr[ chno ], len ) ) )
+				uint32_t buf[ MAX_PHONE_SEQ_LEN + 1 ];
+				u8tou32cpy( buf,
+					    ueStrSeek( pUserPhraseData->wordSeq,
+						       c.from - from ),
+					    len );
+				if ( memcmp( buf, selectStr[ chno ],
+					     sizeof(uint32_t) * len ) )
 					break;
 			}
 
@@ -245,8 +248,8 @@ static int CheckUserChoose(
  * their intersections are the same */
 static int CheckChoose(
 		ChewingData *pgdata,
-		int ph_id, int from, int to, Phrase **pp_phr, 
-		char selectStr[][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ], 
+		int ph_id, int from, int to, Phrase **pp_phr,
+		uint32_t selectStr[][MAX_PHONE_SEQ_LEN + 1],
 		IntervalType selectInterval[], int nSelect )
 {
 	IntervalType inte, c;
@@ -270,10 +273,14 @@ static int CheckChoose(
 				 * then continue to test
 				 */
 				len = c.to - c.from;
-				if ( memcmp(
-					ueStrSeek( phrase->phrase, c.from - from ),
-					selectStr[ chno ],
-					ueStrNBytes( selectStr[ chno ], len ) ) )
+				
+				uint32_t buf[ MAX_PHONE_SEQ_LEN + 1 ];
+				u8tou32cpy( buf,
+					    ueStrSeek( phrase->phrase,
+						       c.from - from ),
+					    len );
+				if ( memcmp( buf, selectStr[ chno ],
+					     sizeof(uint32_t) * len ) )
 					break;
 			}
 			else if ( IsIntersect( inte, selectInterval[ chno ] ) ) {
@@ -363,8 +370,8 @@ static void internal_release_Phrase( UsedPhraseMode mode, Phrase *pUser, Phrase 
 static void FindInterval(
 		ChewingData *pgdata,
 		uint16_t *phoneSeq, int nPhoneSeq,
-		char selectStr[][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ], 
-		IntervalType selectInterval[], int nSelect, 
+		uint32_t selectStr[][MAX_PHONE_SEQ_LEN + 1],
+		IntervalType selectInterval[], int nSelect,
 		int bArrBrkpt[], TreeDataType *ptd )
 {
 	int end, begin, pho_id;
@@ -613,9 +620,9 @@ static void LoadChar( ChewingData *pgdata, uint32_t *buf, int buf_len, uint16_t 
 static void OutputRecordStr(
 		ChewingData *pgdata,
 		uint32_t *out_buf, int out_buf_len,
-		int *record, int nRecord, 
+		int *record, int nRecord,
 		uint16_t phoneSeq[], int nPhoneSeq,
-		char selectStr[][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ], 
+		uint32_t selectStr[][MAX_PHONE_SEQ_LEN + 1],
 		IntervalType selectInterval[],
 		int nSelect, TreeDataType *ptd )
 {
@@ -632,9 +639,9 @@ static void OutputRecordStr(
 	for ( i = 0; i < nSelect; i++ ) {
 		inter.from = selectInterval[ i ].from;
 		inter.to = selectInterval[ i ].to ;
-		u8tou32cpy( out_buf + inter.from,
-			    selectStr[ i ],
-			    ( inter.to - inter.from ) );
+		memcpy( out_buf + inter.from,
+			selectStr[ i ],
+			sizeof(uint32_t) * ( inter.to - inter.from ) );
 	}
 }
 
@@ -957,7 +964,7 @@ static RecordNode* NextCut( TreeDataType *tdt, PhrasingOutput *ppo )
 int Phrasing(
 		ChewingData *pgdata, /* FIXME: Remove other parameters since they are all in pgdata. */
 		PhrasingOutput *ppo, uint16_t phoneSeq[], int nPhoneSeq,
-		char selectStr[][ MAX_PHONE_SEQ_LEN * MAX_UTF8_SIZE + 1 ], 
+		uint32_t selectStr[][MAX_PHONE_SEQ_LEN + 1],
 		IntervalType selectInterval[], int nSelect, 
 		int bArrBrkpt[], int bUserArrCnnct[] ) 
 {

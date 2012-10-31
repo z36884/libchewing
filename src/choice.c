@@ -62,9 +62,9 @@ static void ChangeSelectIntervalAndBreakpoint(
 	if ( ( user_alloc = ( to - from ) ) == 0 )
 		return;
 
-	ueStrNCpy( pgdata->selectStr[ pgdata->nSelect ],
-			str,
-			user_alloc, 1);
+	u8tou32cpy( pgdata->selectStr[ pgdata->nSelect ],
+		    str, user_alloc );
+	pgdata->selectStr[ pgdata->nSelect ][ user_alloc ] = 0;
 	pgdata->nSelect++;
 
 	if ( user_alloc > 1 ) {

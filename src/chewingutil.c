@@ -672,7 +672,7 @@ int AddChi( uint16_t phone, ChewingData *pgdata )
 	memmove(
 		&( pgdata->phoneSeq[ cursor + 1 ] ),
 		&( pgdata->phoneSeq[ cursor ] ) ,
-		sizeof( uint16_t ) * ( pgdata->nPhoneSeq - cursor ) );
+		sizeof(uint16_t) * ( pgdata->nPhoneSeq - cursor ) );
 	pgdata->phoneSeq[ cursor ] = phone;
 	pgdata->nPhoneSeq ++;
 
@@ -680,7 +680,7 @@ int AddChi( uint16_t phone, ChewingData *pgdata )
 	memmove(
 		&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor + 1 ] ),
 		&( pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] ) ,
-		sizeof( uint32_t ) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
+		sizeof(uint32_t) * ( pgdata->chiSymbolBufLen - pgdata->chiSymbolCursor ) );
 	/* "0" means Chinese word */
 	pgdata->chiSymbolBuf[ pgdata->chiSymbolCursor ] = 0;
 	pgdata->chiSymbolBufLen++;
@@ -707,11 +707,13 @@ static void ShowChewingData( ChewingData *pgdata )
 		PhoneSeqCursor( pgdata ),
 		pgdata->nSelect );
 	for ( i = 0; i < pgdata->nSelect; i++ ) {
+#if FIXME
 		DEBUG_OUT(
 			"  %14s%4d%4d\n",
 			pgdata->selectStr[ i ], 
 			pgdata->selectInterval[ i ].from,
 			pgdata->selectInterval[ i ].to );
+#endif
 	}
 	
 	DEBUG_OUT( "bUserArrCnnct : " );
@@ -964,9 +966,9 @@ int AddSelect( ChewingData *pgdata, int sel_i )
 	nSelect = pgdata->nSelect;
 
 	/* change "selectStr" , "selectInterval" , and "nSelect" of ChewingData */
-	u32tou8cpy( pgdata->selectStr[ nSelect ],
-		    pgdata->choiceInfo.totalChoiceStr[ sel_i ],
-		    0, length );
+	memcpy( pgdata->selectStr[ nSelect ],
+		pgdata->choiceInfo.totalChoiceStr[ sel_i ],
+		sizeof(uint32_t) * length );
 	cursor = PhoneSeqCursor( pgdata );
 	pgdata->selectInterval[ nSelect ].from = cursor;
 	pgdata->selectInterval[ nSelect ].to = cursor + length;
@@ -1016,7 +1018,9 @@ void RemoveSelectElement( int i, ChewingData *pgdata )
 	if ( --pgdata->nSelect == i )
 		return;
 	pgdata->selectInterval[ i ] = pgdata->selectInterval[ pgdata->nSelect ];
-	strcpy( pgdata->selectStr[ i ], pgdata->selectStr[ pgdata->nSelect ] );
+	memmove( pgdata->selectStr[ i ],
+		 pgdata->selectStr[ pgdata->nSelect ],
+		 sizeof(pgdata->selectStr[0]) );
 }
 
 static int ChewingKillSelectIntervalAcross( int cursor, ChewingData *pgdata )
