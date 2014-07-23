@@ -1985,7 +1985,9 @@ CHEWING_API int chewing_userphrase_add(ChewingContext *ctx, const char *phrase_b
     ssize_t phrase_len;
     ssize_t phone_len;
     uint16_t *phone_buf = 0;
-    int ret;
+    int i, j, ret;
+    char str[50], word[40];
+    char *temp_bopomofo_buf[200];
 
     if (!ctx || !phrase_buf || !bopomofo_buf) {
         return -1;
@@ -2001,6 +2003,7 @@ CHEWING_API int chewing_userphrase_add(ChewingContext *ctx, const char *phrase_b
         return 0;
     }
 
+    
     phone_buf = ALC(uint16_t, phone_len + 1);
     if (!phone_buf)
         return -1;
@@ -2010,12 +2013,90 @@ CHEWING_API int chewing_userphrase_add(ChewingContext *ctx, const char *phrase_b
         return 0;
     }
 
+
+    FILE *fp = fopen("a.out", "w");
+    strcpy(str, phrase_buf);
+    for(i = phrase_len; i >= 1; i--) { 
+
+	fprintf((FILE*)fp, "aaaa%sbbbb%s\n", str, bopomofo_buf);
+
+	phrase_len = ueStrLen(str);
+	phone_len = UintArrayFromBopomofo(NULL, 0, bopomofo_buf);
+	uint16_t *phone_buf = 0;
+	phone_buf = ALC(uint16_t, phone_len + 1);
+	if (!phone_buf)
+	    return -1;
+	ret = UintArrayFromBopomofo(phone_buf, phone_len + 1, bopomofo_buf);
+	if (ret == -1) {
+	    free(phone_buf);
+	    return 0;
+	}
+
+	ret = UserUpdatePhrase(pgdata, phone_buf, str);
+	if (ret == USER_UPDATE_FAIL) 
+	    return 0;
+	free(phone_buf);
+
+	//strcpy(temp_bopomofo_buf, bopomofo_buf);
+/*	
+	for(j = i; j >= 1; j--) {
+	    memset(word, 0, sizeof(word));
+	    strncat(word, str, 3*j);
+
+	    phrase_len = ueStrLen(str);
+	    phone_len = UintArrayFromBopomofo(NULL, 0, bopomofo_buf);
+	    uint16_t *phone_buf = 0;
+	    phone_buf = ALC(uint16_t, phone_len + 1);
+	    if (!phone_buf)
+		return -1;
+	    ret = UintArrayFromBopomofo(phone_buf, phone_len + 1, bopomofo_buf);
+	    if (ret == -1) {
+		free(phone_buf);
+		return 0;
+	    }
+
+	    fprintf((FILE*)fp, "aaaa%sbbbb%s\n", str, bopomofo_buf);
+
+	    ret = UserUpdatePhrase(pgdata, phone_buf, str);
+	    if (ret == USER_UPDATE_FAIL) 
+		return 0;
+	    free(phone_buf);
+
+	    const char *iter;
+	    while(*iter && *iter != 0x20) {
+		
+
+	    }
+	}
+	*/
+
+	//cut the phrase array
+	for(j = 3; j < strlen(str); j++) {
+	    str[j - 3] = str[j];
+	}
+	str[3*(i-1)] = '\0';
+
+	//cut the phone array
+	const char *iter;
+	iter = bopomofo_buf;
+	while(*iter) {
+	    if(*iter == 0x20) {
+		iter++;
+		bopomofo_buf = iter;
+		break;
+	    }
+	    iter++;
+	}
+    }
+    free(phone_buf);
+    /*
     ret = UserUpdatePhrase(pgdata, phone_buf, phrase_buf);
     free(phone_buf);
 
     if (ret == USER_UPDATE_FAIL) {
         return 0;
     }
+    */
 
     return 1;
 }

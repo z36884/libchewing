@@ -90,9 +90,9 @@ int main()
     int i;
 
     /* Initialize libchewing */
-    putenv("CHEWING_PATH=" CHEWING_DATA_PREFIX);
+    //putenv("CHEWING_PATH=" CHEWING_DATA_PREFIX);
     /* for the sake of testing, we should not change existing hash data */
-    putenv("CHEWING_USER_PATH=" TEST_HASH_DIR);
+    //putenv("CHEWING_USER_PATH=" TEST_HASH_DIR);
 
     /* Request handle to ChewingContext */
     ctx = chewing_new();
