@@ -28,7 +28,24 @@ libtesthelper_la_LIBADD = \
 
 TESTS = $(NATIVE_TESTS)
 NATIVE_TESTS = \
-	test-a \
+	test-bopomofo \
+	test-config \
+	test-easy-symbol \
+	test-error-handling \
+	test-fullshape \
+	test-key2pho \
+	test-keyboard \
+	test-keyboardless \
+	test-logger \
+	test-mmap \
+	test-path \
+	test-reset \
+	test-regression \
+	test-symbol \
+	test-special-symbol \
+	test-struct-size \
+	test-userphrase \
+	test-utf8 \
 	$(NULL)
 
 check_HEADERS = \
@@ -87,4 +104,3 @@ endif
 endif
 
 CLEANFILES = uhash.dat materials.txt-random chewing.sqlite3 test.sqlite3
-
