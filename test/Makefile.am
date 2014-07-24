@@ -87,3 +87,4 @@ endif
 endif
 
 CLEANFILES = uhash.dat materials.txt-random chewing.sqlite3 test.sqlite3
+

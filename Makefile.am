@@ -65,3 +65,4 @@ release:
 	cat $(top_srcdir)/scripts/ChangeLog-svn >> $(distdir)/ChangeLog
 	tardir=$(distdir) && $(am__tar) | BZIP2=$${BZIP2--9} bzip2 -c >$(distdir).tar.bz2
 	$(am__remove_distdir)
+
