@@ -583,8 +583,8 @@ void AutoLearnPhrase(ChewingData *pgdata)
   
     length = pgdata->chiSymbolBufLen;
 
-    for(i = 0; i <= length; i++) {
-	for(j = (i+1); j <= length; j++) {
+    for (i = 0; i <= length; i++) {
+	for (j = (i+1); j <= length; j++) {
 	    memset(bufPhoneSeq, 0, sizeof(bufPhoneSeq));
 	    memset(bufWordSeq, 0, sizeof(bufWordSeq));
 	    from = i;
@@ -594,6 +594,7 @@ void AutoLearnPhrase(ChewingData *pgdata)
 	    UserUpdatePhrase(pgdata, bufPhoneSeq, bufWordSeq);
 	}
     }
+
     /*
     for (i = 0; i < pgdata->nPrefer; i++) {
         from = pgdata->preferInterval[i].from;

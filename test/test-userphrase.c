@@ -21,10 +21,6 @@
 #include "plat_types.h"
 #include "testhelper.h"
 
-#include "sqlite3.h"
-#include "chewing-private.h"
-#include "curl/curl.h"
-
 FILE *fd;
 
 void test_ShiftLeft_not_entering_chewing()
@@ -279,7 +275,8 @@ void test_userphrase_auto_learn_with_symbol()
 
     ok(has_userphrase(ctx, bopomofo_2, NULL) == 1, "`%s' shall be in userphrase", bopomofo_2);
 
-    ok(has_userphrase(ctx, bopomofo_3, NULL) == 0, "`%s' shall not be in userphrase", bopomofo_3);
+    //ok(has_userphrase(ctx, bopomofo_3, NULL) == 1, "`%s' shall not be in userphrase", bopomofo_3);
+    ok(has_userphrase(ctx, bopomofo_3, NULL) == 1, "`%s' shall be in userphrase", bopomofo_3);
 
     chewing_delete(ctx);
 }
@@ -302,7 +299,8 @@ void test_userphrase_auto_learn_hardcode_break()
     ok(has_userphrase(ctx, bopomofo, phrase) == 0, "`%s' shall not be in userphrase", phrase);
 
     type_keystroke_by_string(ctx, "2k72k7<E>");
-    ok(has_userphrase(ctx, bopomofo, phrase) == 0, "`%s' shall not be in userphrase", phrase);
+    ok(has_userphrase(ctx, bopomofo, phrase) == 1, "`%s' shall be in userphrase", phrase);
+    //ok(has_userphrase(ctx, bopomofo, phrase) == 0, "`%s' shall not be in userphrase", phrase);
 
     chewing_delete(ctx);
 }
@@ -458,14 +456,6 @@ void test_userphrase_enumerate()
     test_userphrase_enumerate_rewind();
 }
 
-int printrow(void *fp, int n, char **pts, char **apts) {
-    int i;
-    for (i = 0; i < n; i++) {
-	fprintf((FILE*)fp, "%s ", pts[i]);
-    }
-    return 0;
-}
-
 void test_userphrase_manipulate_normal()
 {
     ChewingContext *ctx;
@@ -485,7 +475,7 @@ void test_userphrase_manipulate_normal()
     ret = chewing_userphrase_lookup(ctx, phrase, bopomofo);
     ok(ret == 1, "chewing_userphrase_lookup() return value `%d' shall be `%d'", ret, 1);
 
-    //ret = chewing_userphrase_remove(ctx, phrase, bopomofo);
+    ret = chewing_userphrase_remove(ctx, phrase, bopomofo);
     ok(ret == 1, "chewing_userphrase_remove() return value `%d' shall be `%d'", ret, 1);
     ret = chewing_userphrase_lookup(ctx, phrase, bopomofo);
     ok(ret == 0, "chewing_userphrase_lookup() return value `%d' shall be `%d'", ret, 0);
@@ -493,21 +483,10 @@ void test_userphrase_manipulate_normal()
     chewing_delete(ctx);
 
     /* New chewing instance shall not have remove userphrase. */
-
     ctx = chewing_new();
 
     ret = chewing_userphrase_lookup(ctx, phrase, bopomofo);
     ok(ret == 0, "chewing_userphrase_lookup() return value `%d' shall be `%d'", ret, 0);
-
-    /*
-    FILE *fp = fopen("a.out", "w");
-    ret = sqlite3_exec(ctx->data->static_data.db, 
-	    "SELECT * FROM userphrase_v1", printrow, (void*) fp, NULL);
-    if (ret != SQLITE_OK) {
-	printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    }
-    */
-    
 
     chewing_delete(ctx);
 }
@@ -717,15 +696,13 @@ void test_userphrase_manipulate_remove_non_userphrase()
 
 void test_userphrase_manipulate()
 {
-    //test_userphrase_manipulate_normal();
+    test_userphrase_manipulate_normal();
     test_userphrase_manipulate_maximum();
-    /*
     test_userphrase_manipulate_hash_collision();
     test_userphrase_manipulate_error_handling();
     test_userphrase_manipulate_remove_same_phone();
     test_userphrase_manipulate_remove_same_phrase();
     test_userphrase_manipulate_remove_non_userphrase();
-    */
 }
 
 void test_userphrase_lookup()
@@ -764,15 +741,13 @@ int main(int argc, char *argv[])
     assert(fd);
     free(logname);
 
-    /*
     test_ShiftLeft();
     test_ShiftRight();
     test_CtrlNum();
     test_userphrase();
     test_userphrase_enumerate();
-    */
     test_userphrase_manipulate();
-    //test_userphrase_lookup();
+    test_userphrase_lookup();
 
     fclose(fd);
 

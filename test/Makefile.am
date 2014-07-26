@@ -46,6 +46,7 @@ NATIVE_TESTS = \
 	test-struct-size \
 	test-userphrase \
 	test-utf8 \
+	test-ngram \
 	$(NULL)
 
 check_HEADERS = \
